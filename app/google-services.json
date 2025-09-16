@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "235204908603",
+    "project_id": "cataractdetection-2b7c2",
+    "storage_bucket": "cataractdetection-2b7c2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235204908603:android:d5f882477d4f05f5942e1e",
+        "android_client_info": {
+          "package_name": "com.dicoding.cataract_detection_app_final_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzo52bcK4uHB1CS9Sldoit7mTzmX3UXLw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
