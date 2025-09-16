@@ -113,8 +113,17 @@ class AuthPresenter {
     }
     
     fun logout() {
-        auth.signOut()
+        _isLoading.value = true
         _errorMessage.value = null
+        
+        try {
+            auth.signOut()
+            // Sign out is synchronous, so we can set loading to false immediately
+            _isLoading.value = false
+        } catch (e: Exception) {
+            _isLoading.value = false
+            _errorMessage.value = e.message ?: "Logout failed"
+        }
     }
     
     fun resetPassword(email: String) {
@@ -172,4 +181,3 @@ class AuthPresenter {
             }
     }
 }
-

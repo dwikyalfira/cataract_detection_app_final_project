@@ -41,13 +41,25 @@ android {
 }
 
 dependencies {
-
+    // AppCompat for backward compatibility
+    implementation(libs.androidx.appcompat)
+    
+    // Core KTX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    
+    // Compose
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
+    
+    // DataStore Preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    
+    // Lifecycle components
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
