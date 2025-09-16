@@ -116,6 +116,9 @@ fun CataractDetectorApp() {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
     
+    // Get the activity for recreation
+    val activity = context as? ComponentActivity
+    
     // Observe theme preference
     val themeMode by userPreferences.themeMode.collectAsState(initial = UserPreferences.THEME_SYSTEM)
     
@@ -252,7 +255,11 @@ fun CataractDetectorApp() {
                 composable("settings") {
                     SettingsView(
                         onBackClick = { navController.popBackStack() },
-                        userPreferences = userPreferences
+                        userPreferences = userPreferences,
+                        onLanguageChanged = { 
+                            // Recreate activity to apply language changes
+                            activity?.recreate()
+                        }
                     )
                 }
                 

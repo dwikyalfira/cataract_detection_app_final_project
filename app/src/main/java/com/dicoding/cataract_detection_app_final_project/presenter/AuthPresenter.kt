@@ -28,11 +28,17 @@ class AuthPresenter {
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
     init {
-        // Listen for authentication state changes
-        auth.addAuthStateListener { firebaseAuth ->
-            val user = firebaseAuth.currentUser
-            _currentUser.value = user
-            _isAuthenticated.value = user != null
+        try {
+            // Listen for authentication state changes
+            auth.addAuthStateListener { firebaseAuth ->
+                val user = firebaseAuth.currentUser
+                _currentUser.value = user
+                _isAuthenticated.value = user != null
+            }
+        } catch (e: Exception) {
+            // Handle Firebase initialization errors gracefully
+            android.util.Log.w("AuthPresenter", "Firebase Auth initialization error: ${e.message}")
+            _errorMessage.value = "Authentication service unavailable"
         }
     }
     
@@ -101,15 +107,19 @@ class AuthPresenter {
             "alertScans" to 0
         )
         
-        firestore.collection("users")
-            .document(uid)
-            .set(userData)
-            .addOnSuccessListener {
-                // User data saved successfully
-            }
-            .addOnFailureListener {
-                // Handle error
-            }
+        try {
+            firestore.collection("users")
+                .document(uid)
+                .set(userData)
+                .addOnSuccessListener {
+                    // User data saved successfully
+                }
+                .addOnFailureListener { exception ->
+                    android.util.Log.w("AuthPresenter", "Failed to save user data: ${exception.message}")
+                }
+        } catch (e: Exception) {
+            android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
+        }
     }
     
     fun logout() {
@@ -151,15 +161,21 @@ class AuthPresenter {
     }
     
     fun getUserData(uid: String, callback: (Map<String, Any>?) -> Unit) {
-        firestore.collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener { document ->
-                callback(document.data)
-            }
-            .addOnFailureListener {
-                callback(null)
-            }
+        try {
+            firestore.collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    callback(document.data)
+                }
+                .addOnFailureListener { exception ->
+                    android.util.Log.w("AuthPresenter", "Failed to get user data: ${exception.message}")
+                    callback(null)
+                }
+        } catch (e: Exception) {
+            android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
+            callback(null)
+        }
     }
     
     fun updateUserStats(uid: String, isHealthy: Boolean) {
@@ -173,11 +189,18 @@ class AuthPresenter {
             updates["alertScans"] = com.google.firebase.firestore.FieldValue.increment(1)
         }
         
-        firestore.collection("users")
-            .document(uid)
-            .update(updates)
-            .addOnFailureListener {
-                // Handle error
-            }
+        try {
+            firestore.collection("users")
+                .document(uid)
+                .update(updates)
+                .addOnSuccessListener {
+                    // Stats updated successfully
+                }
+                .addOnFailureListener { exception ->
+                    android.util.Log.w("AuthPresenter", "Failed to update user stats: ${exception.message}")
+                }
+        } catch (e: Exception) {
+            android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
+        }
     }
 }
