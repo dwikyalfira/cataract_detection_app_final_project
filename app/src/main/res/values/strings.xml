@@ -26,8 +26,66 @@
     <string name="language_updated">Language changed to %s</string>
     <string name="applying_changes">Applying changes…</string>
     
+    <!-- Navigation -->
+    <string name="home">Home</string>
+    <string name="check">Check</string>
+    <string name="check_for_cataract">Check for Cataract</string>
+    <string name="my_profile">My Profile</string>
+    
     <!-- User Info -->
     <string name="email">Email</string>
     <string name="joined">Joined</string>
     <string name="unknown">Unknown</string>
+    
+    <!-- Profile Editing -->
+    <string name="edit_name">Edit Name</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="cancel_edit">Cancel</string>
+    <string name="name_updated">Name updated successfully</string>
+    <string name="name_update_failed">Failed to update name</string>
+    <string name="enter_new_name">Enter new name</string>
+    <string name="name_hint_edit">Enter your new name</string>
+    
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="sign_in_to_account">Sign in to your account</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="email_hint">Enter your email</string>
+    <string name="password_hint">Enter your password</string>
+    
+    <!-- Forgot Password -->
+    <string name="reset_password">Reset Password</string>
+    <string name="reset_password_description">Enter your email address and we\'ll send you a link to reset your password.</string>
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="back_to_login">Back to Login</string>
+    <string name="reset_link_sent">Reset link sent to your email</string>
+    <string name="reset_link_failed">Failed to send reset link. Please try again.</string>
+    <string name="check_email_instructions">Please check your email and follow the instructions to reset your password.</string>
+    
+    <!-- Registration -->
+    <string name="full_name">Full Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="create_account">Create your account</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="name_hint">Enter your full name</string>
+    <string name="confirm_password_hint">Confirm your password</string>
+    <string name="terms_privacy">By registering, you agree to our Terms of Service and Privacy Policy. Your data will be used to provide you with cataract detection services and improve our AI model.</string>
+    
+    <!-- Home Page -->
+    <string name="eye_health_overview">Eye Health Overview</string>
+    <string name="eye_health_description">Your eyes are one of your most important senses. Maintaining good eye health is crucial for your overall well-being and quality of life. Regular eye check-ups and early detection of eye conditions can help preserve your vision.</string>
+    <string name="what_are_cataracts">What are Cataracts?</string>
+    <string name="cataracts_description">Cataracts are a clouding of the eye\'s natural lens, which lies behind the iris and pupil. They are the most common cause of vision loss in people over age 40 and are the principal cause of blindness worldwide.</string>
+    <string name="cataract_symptoms">Common symptoms include:\n• Blurry or cloudy vision\n• Difficulty seeing at night\n• Sensitivity to light and glare\n• Seeing halos around lights\n• Frequent changes in eyeglass prescription</string>
+    <string name="prevention_tips">Prevention Tips</string>
+    <string name="prevention_content">While cataracts are largely age-related, you can take steps to protect your eyes:\n\n• Wear sunglasses with UV protection\n• Quit smoking\n• Eat a healthy diet rich in antioxidants\n• Manage diabetes and other health conditions\n• Get regular eye examinations\n• Limit alcohol consumption</string>
+    <string name="treatment_options">Treatment Options</string>
+    <string name="treatment_content">Cataract surgery is one of the most common and successful procedures performed today. The surgery involves removing the clouded lens and replacing it with a clear artificial lens.\n\nEarly detection through regular eye exams is key to successful treatment and maintaining good vision.</string>
+    <string name="about_this_app">About This App</string>
+    <string name="app_description">This app uses AI technology to help detect potential cataracts in eye images. Use the \'Check\' tab to analyze images, and visit your \'Profile\' for personal statistics and information.\n\nRemember: This app is for informational purposes only and should not replace professional medical advice.</string>
 </resources>

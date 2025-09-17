@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Cataract_detection_app_final_project" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Material 3 Expressive Theme -->
+    <style name="Theme.Cataract_detection_app_final_project" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Primary colors for expressive design -->
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorPrimaryDark">@color/md_theme_light_primary</item>
+        <item name="colorAccent">@color/md_theme_light_secondary</item>
+        
+        <!-- Enable dynamic colors for Android 12+ -->
+        <item name="android:colorAccent">@color/md_theme_light_primary</item>
+    </style>
 </resources>

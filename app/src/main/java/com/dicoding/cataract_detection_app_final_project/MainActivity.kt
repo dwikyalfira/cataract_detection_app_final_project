@@ -1,5 +1,6 @@
 package com.dicoding.cataract_detection_app_final_project
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -27,10 +28,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -41,28 +45,50 @@ import com.dicoding.cataract_detection_app_final_project.data.UserPreferences
 import com.dicoding.cataract_detection_app_final_project.presenter.AuthPresenter
 import com.dicoding.cataract_detection_app_final_project.presenter.MainPresenter
 import com.dicoding.cataract_detection_app_final_project.presenter.Screen
-import com.dicoding.cataract_detection_app_final_project.ui.theme.Cataract_detection_app_final_projectTheme
+import com.dicoding.cataract_detection_app_final_project.theme.CataractDetectionExpressiveTheme
 import com.dicoding.cataract_detection_app_final_project.view.CheckView
+import com.dicoding.cataract_detection_app_final_project.view.ForgotPasswordView
 import com.dicoding.cataract_detection_app_final_project.view.HomeView
 import com.dicoding.cataract_detection_app_final_project.view.LoginView
 import com.dicoding.cataract_detection_app_final_project.view.ProfileView
 import com.dicoding.cataract_detection_app_final_project.view.RegisterView
 import com.dicoding.cataract_detection_app_final_project.view.SettingsView
 import com.dicoding.cataract_detection_app_final_project.view.SplashView
+import com.dicoding.cataract_detection_app_final_project.R
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private lateinit var presenter: MainPresenter
     private val userPreferences by lazy { UserPreferences(this) }
 
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("user_preferences", MODE_PRIVATE)
+        // Force Indonesian as default
+        prefs.edit().putString("language", UserPreferences.LANG_INDONESIAN).apply()
+        val lang = UserPreferences.LANG_INDONESIAN
+        
+        android.util.Log.d("MainActivity", "Language from preferences: $lang")
+        
+        val locale = Locale.forLanguageTag("id")
+        
+        android.util.Log.d("MainActivity", "Setting locale to: ${locale.language}")
+        
+        // Set system locale
+        Locale.setDefault(locale)
+        
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+        
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Initialize presenter
         presenter = MainPresenter()
 
-        // Set initial theme mode
         val initialTheme = userPreferences.getThemeModeSync()
         AppCompatDelegate.setDefaultNightMode(
             when (initialTheme) {
@@ -74,76 +100,57 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode by userPreferences.themeMode.collectAsState(initial = initialTheme)
-            val language by userPreferences.language.collectAsState(initial = userPreferences.getLanguageSync())
 
-            // Language changes are handled by the Application class
-            // No need to recreate activity here as it's handled in attachBaseContext
-
-            Cataract_detection_app_final_projectTheme(
-                themeMode = themeMode
+            CataractDetectionExpressiveTheme(
+                darkTheme = themeMode == UserPreferences.THEME_DARK,
+                dynamicColor = true
             ) {
-                CataractDetectorApp()
+                CataractDetectorApp(userPreferences = userPreferences, onRecreate = { recreate() })
             }
         }
     }
 }
 
-// Navigation items for bottom navigation
 sealed class NavigationItem(
     val route: String,
-    val title: String,
+    val titleResId: Int,
     val icon: ImageVector
 ) {
-    object Home : NavigationItem("home", "Home", Icons.Default.Home)
-    object Check : NavigationItem("check", "Check", Icons.Default.CheckCircle)
-    object Profile : NavigationItem("profile", "Profile", Icons.Default.Person)
+    object Home : NavigationItem("home", R.string.home, Icons.Default.Home)
+    object Check : NavigationItem("check", R.string.check, Icons.Default.CheckCircle)
+    object Profile : NavigationItem("profile", R.string.profile, Icons.Default.Person)
 }
 
-// Authentication routes
 sealed class AuthRoute(val route: String) {
     object Login : AuthRoute("login")
     object Register : AuthRoute("register")
+    object ForgotPassword : AuthRoute("forgot_password")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CataractDetectorApp() {
+fun CataractDetectorApp(userPreferences: UserPreferences, onRecreate: () -> Unit) {
     val navController = rememberNavController()
     val presenter = remember { MainPresenter() }
     val authPresenter = remember { AuthPresenter() }
-    val context = LocalContext.current
-    val userPreferences = remember { UserPreferences(context = context) }
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
-    
-    // Get the activity for recreation
-    val activity = context as? ComponentActivity
-    
-    // Observe theme preference
-    val themeMode by userPreferences.themeMode.collectAsState(initial = UserPreferences.THEME_SYSTEM)
-    
-    // Observe language preference
-    val language by userPreferences.language.collectAsState(initial = UserPreferences.LANG_ENGLISH)
-    
+
     val currentScreen by presenter.currentScreen
-    val predictionResult by presenter.predictionResult
-    val isLoading by presenter.isLoading
     val isAuthenticated by authPresenter.isAuthenticated.collectAsState()
     val authIsLoading by authPresenter.isLoading.collectAsState()
     val authErrorMessage by authPresenter.errorMessage.collectAsState()
+    val authSuccessMessage by authPresenter.successMessage.collectAsState()
     val currentUser by authPresenter.currentUser.collectAsState()
-    
-    // User data state
+
     var userData by remember { mutableStateOf<Map<String, Any>?>(null) }
-    
-    // Start splash timer when app launches
+
     LaunchedEffect(Unit) {
         if (currentScreen == Screen.Splash) {
             presenter.startSplashTimer()
         }
     }
-    
-    // Fetch user data when current user changes
+
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             authPresenter.getUserData(user.uid) { data ->
@@ -151,12 +158,10 @@ fun CataractDetectorApp() {
             }
         }
     }
-    
-    // Show splash screen first
+
     if (currentScreen == Screen.Splash) {
         SplashView()
     } else if (!isAuthenticated) {
-        // Show authentication screens
         NavHost(
             navController = navController,
             startDestination = AuthRoute.Login.route
@@ -170,7 +175,7 @@ fun CataractDetectorApp() {
                         navController.navigate(AuthRoute.Register.route)
                     },
                     onForgotPasswordClick = {
-                        // TODO: Implement forgot password
+                        navController.navigate(AuthRoute.ForgotPassword.route)
                     },
                     isLoading = authIsLoading,
                     errorMessage = authErrorMessage
@@ -188,32 +193,43 @@ fun CataractDetectorApp() {
                     errorMessage = authErrorMessage
                 )
             }
+            composable(AuthRoute.ForgotPassword.route) {
+                ForgotPasswordView(
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onSendResetClick = { email ->
+                        authPresenter.resetPassword(email)
+                    },
+                    isLoading = authIsLoading,
+                    errorMessage = authErrorMessage,
+                    successMessage = authSuccessMessage
+                )
+            }
         }
     } else {
-        // Main app with top and bottom navigation
         Scaffold(
             topBar = {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: NavigationItem.Home.route
-                
-                // Map routes to their corresponding titles
+
                 val title = when (currentRoute) {
-                    NavigationItem.Home.route -> "Home"
-                    NavigationItem.Check.route -> "Check for Cataract"
-                    NavigationItem.Profile.route -> "My Profile"
-                    else -> "Cataract Detector"
+                    NavigationItem.Home.route -> stringResource(R.string.home)
+                    NavigationItem.Check.route -> stringResource(R.string.check_for_cataract)
+                    NavigationItem.Profile.route -> stringResource(R.string.my_profile)
+                    else -> stringResource(R.string.app_name)
                 }
-                
+
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
-                    title = {
-                        Text(title)
-                    },
-                    actions = {
-                        // Logout button moved to profile page
+                    title = { 
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge
+                        ) 
                     },
                     scrollBehavior = scrollBehavior
                 )
@@ -222,15 +238,15 @@ fun CataractDetectorApp() {
                 NavigationBar {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
-                    
+
                     listOf(
                         NavigationItem.Home,
                         NavigationItem.Check,
                         NavigationItem.Profile
                     ).forEach { item ->
                         NavigationBarItem(
-                            icon = { Icon(item.icon, contentDescription = item.title) },
-                            label = { Text(item.title) },
+                            icon = { Icon(item.icon, contentDescription = stringResource(item.titleResId)) },
+                            label = { Text(stringResource(item.titleResId)) },
                             selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                             onClick = {
                                 navController.navigate(item.route) {
@@ -251,26 +267,20 @@ fun CataractDetectorApp() {
                 startDestination = NavigationItem.Home.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                // Settings Screen
                 composable("settings") {
                     SettingsView(
                         onBackClick = { navController.popBackStack() },
                         userPreferences = userPreferences,
-                        onLanguageChanged = { 
-                            // Recreate activity to apply language changes
-                            activity?.recreate()
-                        }
+                        onLanguageChanged = onRecreate
                     )
                 }
-                
-                // Main Navigation
                 composable(NavigationItem.Home.route) {
                     HomeView(
                         onUploadImage = { presenter.onUploadImage() },
                         onCaptureImage = { presenter.onCaptureImage() },
                         onNavigateToInfo = { presenter.navigateTo(Screen.Info) },
                         onNavigateToProfile = { presenter.navigateTo(Screen.Profile) },
-                        isLoading = isLoading,
+                        isLoading = presenter.isLoading.value,
                         scrollBehavior = scrollBehavior
                     )
                 }
@@ -278,11 +288,13 @@ fun CataractDetectorApp() {
                     CheckView(
                         onUploadImage = { presenter.onUploadImage() },
                         onCaptureImage = { presenter.onCaptureImage() },
-                        isLoading = isLoading,
+                        isLoading = presenter.isLoading.value,
                         scrollBehavior = scrollBehavior
                     )
                 }
                 composable(NavigationItem.Profile.route) {
+                    val scope = rememberCoroutineScope()
+                    
                     ProfileView(
                         onBackToHome = { navController.navigate(NavigationItem.Home.route) },
                         onLogoutClick = { authPresenter.logout() },
@@ -290,7 +302,12 @@ fun CataractDetectorApp() {
                         scrollBehavior = scrollBehavior,
                         currentUser = currentUser,
                         userData = userData,
-                        isLoading = authIsLoading
+                        isLoading = authIsLoading,
+                        onUpdateName = { newName ->
+                            scope.launch {
+                                authPresenter.updateUserName(newName)
+                            }
+                        }
                     )
                 }
             }
@@ -300,5 +317,5 @@ fun CataractDetectorApp() {
 
 @Composable
 fun SplashView() {
-    TODO("Not yet implemented")
+    // TODO: Implement splash screen
 }

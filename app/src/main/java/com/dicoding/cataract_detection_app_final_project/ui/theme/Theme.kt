@@ -1,6 +1,5 @@
 package com.dicoding.cataract_detection_app_final_project.ui.theme
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Build
 import android.view.View
@@ -75,7 +74,6 @@ fun ProvideThemeMode(
     }
 }
 
-@SuppressLint("LocalContextConfigurationRead")
 @Composable
 fun Cataract_detection_app_final_projectTheme(
     themeMode: String = UserPreferences.THEME_SYSTEM,
@@ -87,7 +85,7 @@ fun Cataract_detection_app_final_projectTheme(
     val context = LocalContext.current
     
     // Check if the current language is RTL
-    val isRtl = remember {
+    val isRtl = remember(context) {
         val config = Configuration(context.resources.configuration)
         config.layoutDirection == View.LAYOUT_DIRECTION_RTL
     }

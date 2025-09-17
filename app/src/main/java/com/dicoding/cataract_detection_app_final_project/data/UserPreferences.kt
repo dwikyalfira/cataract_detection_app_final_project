@@ -1,9 +1,10 @@
 package com.dicoding.cataract_detection_app_final_project.data
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -34,7 +35,7 @@ class UserPreferences(private val context: Context) {
 
     val language: Flow<String> = context.dataStore.data
         .map { preferences ->
-            preferences[LANGUAGE] ?: LANG_ENGLISH
+            preferences[LANGUAGE] ?: LANG_INDONESIAN
         }
 
     suspend fun setThemeMode(theme: String) {
@@ -43,7 +44,7 @@ class UserPreferences(private val context: Context) {
         }
         // Also update SharedPreferences for consistency
         val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        prefs.edit().putString("theme_mode", theme).apply()
+        prefs.edit().putString("theme_mode", theme).commit()
     }
 
     suspend fun setLanguage(language: String) {
@@ -52,7 +53,7 @@ class UserPreferences(private val context: Context) {
         }
         // Also update SharedPreferences for attachBaseContext access
         val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        prefs.edit().putString("language", language).apply()
+        prefs.edit().putString("language", language).commit()
     }
     
     // Get theme mode synchronously (use carefully, only for initialization)
@@ -67,9 +68,9 @@ class UserPreferences(private val context: Context) {
     // Get language synchronously (use carefully, only for initialization)
     fun getLanguageSync(): String = runBlocking {
         try {
-            context.dataStore.data.first()[LANGUAGE] ?: LANG_ENGLISH
+            context.dataStore.data.first()[LANGUAGE] ?: LANG_INDONESIAN
         } catch (e: Exception) {
-            LANG_ENGLISH
+            LANG_INDONESIAN
         }
     }
     
@@ -78,14 +79,14 @@ class UserPreferences(private val context: Context) {
         val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
         val currentData = context.dataStore.data.first()
         
-        // Sync language if not in DataStore but exists in SharedPreferences
+        // Initialize language to Indonesian if not set
         if (currentData[LANGUAGE] == null) {
-            val language = prefs.getString("language", null)
-            if (language != null) {
-                context.dataStore.edit { preferences ->
-                    preferences[LANGUAGE] = language
-                }
+            val language = prefs.getString("language", LANG_INDONESIAN) ?: LANG_INDONESIAN
+            context.dataStore.edit { preferences ->
+                preferences[LANGUAGE] = language
             }
+            // Also update SharedPreferences
+            prefs.edit().putString("language", language).apply()
         }
         
         // Sync theme if not in DataStore but exists in SharedPreferences
@@ -97,5 +98,15 @@ class UserPreferences(private val context: Context) {
                 }
             }
         }
+    }
+    
+    // Force set language to Indonesian (for testing/debugging)
+    suspend fun forceSetIndonesian() {
+        context.dataStore.edit { preferences ->
+            preferences[LANGUAGE] = LANG_INDONESIAN
+        }
+        val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
+        prefs.edit().putString("language", LANG_INDONESIAN).apply()
+        android.util.Log.d("UserPreferences", "Force set language to Indonesian")
     }
 }

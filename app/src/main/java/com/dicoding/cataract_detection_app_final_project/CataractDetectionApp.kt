@@ -20,7 +20,7 @@ class CataractDetectionApp : Application() {
     override fun attachBaseContext(base: Context) {
         // Use SharedPreferences for initial locale setting since DataStore isn't available yet
         val prefs = base.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        val language = prefs.getString("language", UserPreferences.LANG_ENGLISH) ?: UserPreferences.LANG_ENGLISH
+        val language = prefs.getString("language", UserPreferences.LANG_INDONESIAN) ?: UserPreferences.LANG_INDONESIAN
         
         android.util.Log.d("CataractDetectionApp", "Language from preferences: $language")
         
@@ -31,6 +31,9 @@ class CataractDetectionApp : Application() {
         
         android.util.Log.d("CataractDetectionApp", "Setting locale to: ${locale.language}")
         
+        // Update system locale
+        Locale.setDefault(locale)
+        
         val config = Configuration(base.resources.configuration)
         config.setLocale(locale)
         
@@ -40,6 +43,11 @@ class CataractDetectionApp : Application() {
     
     override fun onCreate() {
         super.onCreate()
+        
+        // Force set Indonesian as default language (always)
+        val prefs = getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
+        prefs.edit().putString("language", UserPreferences.LANG_INDONESIAN).apply()
+        android.util.Log.d("CataractDetectionApp", "Force set Indonesian as default language")
         
         // Check internet connectivity before initializing Firebase
         if (isNetworkAvailable()) {
@@ -61,6 +69,8 @@ class CataractDetectionApp : Application() {
         // Initialize DataStore from SharedPreferences if needed
         runBlocking {
             userPreferences.initializeFromSharedPreferences()
+            // Force set Indonesian as default
+            userPreferences.forceSetIndonesian()
         }
         
         // Set theme mode

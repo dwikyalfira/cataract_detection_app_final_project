@@ -5,10 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.tasks.await
 
 
 class AuthPresenter {
@@ -27,11 +29,15 @@ class AuthPresenter {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
+    private val _successMessage = MutableStateFlow<String?>(null)
+    val successMessage: StateFlow<String?> = _successMessage.asStateFlow()
+    
     init {
         try {
             // Listen for authentication state changes
             auth.addAuthStateListener { firebaseAuth ->
                 val user = firebaseAuth.currentUser
+                android.util.Log.d("AuthPresenter", "Auth state changed - user: ${user?.uid}, email: ${user?.email}")
                 _currentUser.value = user
                 _isAuthenticated.value = user != null
             }
@@ -107,12 +113,16 @@ class AuthPresenter {
             "alertScans" to 0
         )
         
+        android.util.Log.d("AuthPresenter", "Saving user data for uid: $uid, data: $userData")
+        android.util.Log.d("AuthPresenter", "Name being saved: $name")
+        android.util.Log.d("AuthPresenter", "Email being saved: $email")
+        
         try {
             firestore.collection("users")
                 .document(uid)
                 .set(userData)
                 .addOnSuccessListener {
-                    // User data saved successfully
+                    android.util.Log.d("AuthPresenter", "User data saved successfully for uid: $uid")
                 }
                 .addOnFailureListener { exception ->
                     android.util.Log.w("AuthPresenter", "Failed to save user data: ${exception.message}")
@@ -144,14 +154,17 @@ class AuthPresenter {
         
         _isLoading.value = true
         _errorMessage.value = null
+        _successMessage.value = null
         
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 _isLoading.value = false
                 if (task.isSuccessful) {
-                    _errorMessage.value = "Password reset email sent"
+                    _successMessage.value = "Password reset email sent"
+                    _errorMessage.value = null
                 } else {
                     _errorMessage.value = task.exception?.message ?: "Failed to send reset email"
+                    _successMessage.value = null
                 }
             }
     }
@@ -160,12 +173,23 @@ class AuthPresenter {
         _errorMessage.value = null
     }
     
+    fun clearSuccess() {
+        _successMessage.value = null
+    }
+    
+    fun clearMessages() {
+        _errorMessage.value = null
+        _successMessage.value = null
+    }
+    
     fun getUserData(uid: String, callback: (Map<String, Any>?) -> Unit) {
+        android.util.Log.d("AuthPresenter", "Getting user data for uid: $uid")
         try {
             firestore.collection("users")
                 .document(uid)
                 .get()
                 .addOnSuccessListener { document ->
+                    android.util.Log.d("AuthPresenter", "User data retrieved: ${document.data}")
                     callback(document.data)
                 }
                 .addOnFailureListener { exception ->
@@ -203,4 +227,41 @@ class AuthPresenter {
             android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
         }
     }
+    
+    suspend fun updateUserName(newName: String) {
+        val user = auth.currentUser
+        if (user == null) {
+            _errorMessage.value = "User not authenticated"
+            return
+        }
+        
+        _isLoading.value = true
+        _errorMessage.value = null
+        _successMessage.value = null
+        
+        try {
+            // Update Firebase Auth display name
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(newName)
+                .build()
+            
+            user.updateProfile(profileUpdates).await()
+            
+            // Update Firestore user data
+            firestore.collection("users")
+                .document(user.uid)
+                .update("name", newName)
+                .await()
+            
+            _successMessage.value = "Name updated successfully"
+            _errorMessage.value = null
+            
+        } catch (e: Exception) {
+            _errorMessage.value = e.message ?: "Failed to update name"
+            _successMessage.value = null
+        } finally {
+            _isLoading.value = false
+        }
+    }
+    
 }

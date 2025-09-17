@@ -1,5 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Material 3 Expressive Color Palette - Light Theme -->
+    
+    <!-- Primary Colors - Vibrant Blue for Eye Health Theme -->
+    <color name="md_theme_light_primary">#1E6B9C</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#C8E6FF</color>
+    <color name="md_theme_light_onPrimaryContainer">#001D32</color>
+    
+    <!-- Secondary Colors - Complementary Teal -->
+    <color name="md_theme_light_secondary">#006A6B</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#6FF7F8</color>
+    <color name="md_theme_light_onSecondaryContainer">#002020</color>
+    
+    <!-- Tertiary Colors - Expressive Orange for Accents -->
+    <color name="md_theme_light_tertiary">#B85C00</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FFDCC2</color>
+    <color name="md_theme_light_onTertiaryContainer">#3B1B00</color>
+    
+    <!-- Error Colors -->
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+    
+    <!-- Surface Colors -->
+    <color name="md_theme_light_surface">#FCFCFF</color>
+    <color name="md_theme_light_onSurface">#1A1C1E</color>
+    <color name="md_theme_light_surfaceVariant">#DEE3EB</color>
+    <color name="md_theme_light_onSurfaceVariant">#42474E</color>
+    <color name="md_theme_light_surfaceContainerHighest">#E2E5E9</color>
+    
+    <!-- Background Colors -->
+    <color name="md_theme_light_background">#FCFCFF</color>
+    <color name="md_theme_light_onBackground">#1A1C1E</color>
+    
+    <!-- Outline Colors -->
+    <color name="md_theme_light_outline">#72777F</color>
+    <color name="md_theme_light_outlineVariant">#C2C7CF</color>
+    
+    <!-- Scrim Color -->
+    <color name="md_theme_light_scrim">#000000</color>
+    
+    <!-- Material 3 Expressive Color Palette - Dark Theme -->
+    
+    <!-- Primary Colors - Dark Theme -->
+    <color name="md_theme_dark_primary">#9CCBFF</color>
+    <color name="md_theme_dark_onPrimary">#003352</color>
+    <color name="md_theme_dark_primaryContainer">#004D74</color>
+    <color name="md_theme_dark_onPrimaryContainer">#C8E6FF</color>
+    
+    <!-- Secondary Colors - Dark Theme -->
+    <color name="md_theme_dark_secondary">#4CDBDB</color>
+    <color name="md_theme_dark_onSecondary">#003738</color>
+    <color name="md_theme_dark_secondaryContainer">#004F50</color>
+    <color name="md_theme_dark_onSecondaryContainer">#6FF7F8</color>
+    
+    <!-- Tertiary Colors - Dark Theme -->
+    <color name="md_theme_dark_tertiary">#FFB77C</color>
+    <color name="md_theme_dark_onTertiary">#5D2E00</color>
+    <color name="md_theme_dark_tertiaryContainer">#844200</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFDCC2</color>
+    
+    <!-- Error Colors - Dark Theme -->
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    
+    <!-- Surface Colors - Dark Theme -->
+    <color name="md_theme_dark_surface">#111318</color>
+    <color name="md_theme_dark_onSurface">#E2E5E9</color>
+    <color name="md_theme_dark_surfaceVariant">#42474E</color>
+    <color name="md_theme_dark_onSurfaceVariant">#C2C7CF</color>
+    <color name="md_theme_dark_surfaceContainerHighest">#3A3F46</color>
+    
+    <!-- Background Colors - Dark Theme -->
+    <color name="md_theme_dark_background">#111318</color>
+    <color name="md_theme_dark_onBackground">#E2E5E9</color>
+    
+    <!-- Outline Colors - Dark Theme -->
+    <color name="md_theme_dark_outline">#8C9199</color>
+    <color name="md_theme_dark_outlineVariant">#42474E</color>
+    
+    <!-- Scrim Color - Dark Theme -->
+    <color name="md_theme_dark_scrim">#000000</color>
+    
+    <!-- Legacy colors for backward compatibility -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
