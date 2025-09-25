@@ -17,9 +17,17 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+        }
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -38,6 +46,17 @@ android {
     buildFeatures {
         compose = true
     }
+    
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    
+    ndkVersion = "26.1.10909125"
 }
 
 dependencies {
@@ -57,6 +76,9 @@ dependencies {
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     
+    // Gson for JSON serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+    
     // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.3")
@@ -66,13 +88,18 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.foundation)
     
+    // Image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
 
     implementation(libs.firebase.ui.auth)
-    
+    implementation(libs.material)
+    // Removed firebase.crashlytics.buildtools to fix 16 KB page size compatibility
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,4 +107,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // In your app/build.gradle.kts dependencies block
+    implementation("androidx.compose.material3:material3:1.3.2") // Or a newer stable/beta version
+
 }

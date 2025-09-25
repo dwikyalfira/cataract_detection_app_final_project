@@ -15,13 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
@@ -29,12 +28,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -49,7 +45,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,7 +57,7 @@ import java.util.Locale
 @Composable
 fun ProfileInfoSection(
     icon: ImageVector,
-    title: String,
+    title: Int,
     value: String
 ) {
     Row(
@@ -73,14 +68,14 @@ fun ProfileInfoSection(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = title,
+            contentDescription = stringResource(title),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column {
             Text(
-                text = title,
+                text = stringResource(title),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -100,7 +95,7 @@ fun ProfileInfoSection(
 fun ProfileInfoSectionPreview() {
     ProfileInfoSection(
         icon = Icons.Default.Email,
-        title = "Email",
+        title = R.string.email,
         value = "john.doe@example.com"
     )
 }
@@ -111,34 +106,32 @@ fun ProfileView(
     onBackToHome: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
+    onHistoryClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     currentUser: FirebaseUser? = null,
     userData: Map<String, Any>? = null,
-    isLoading: Boolean = false,
-    onUpdateName: (String) -> Unit = {}
+    isLoading: Boolean = false
 ) {
     val scrollState = rememberScrollState()
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var showEditNameDialog by remember { mutableStateOf(false) }
-    var newName by remember { mutableStateOf("") }
     
     // Extract user information with detailed debugging
     val firestoreName = userData?.get("name") as? String
     val firebaseDisplayName = currentUser?.displayName
-    val userEmail = currentUser?.email ?: "No email"
+    val userEmail = currentUser?.email ?: stringResource(R.string.unknown)
     
     // Fallback name extraction from email if no name is available
-    val fallbackName = if (userEmail != "No email") {
+    val fallbackName = if (currentUser?.email != null) {
         try {
-            userEmail.substringBefore("@").replace(".", " ").split(" ").joinToString(" ") { 
+            currentUser.email!!.substringBefore("@").replace(".", " ").split(" ").joinToString(" ") { 
                 it.replaceFirstChar { char -> char.uppercase() } 
             }
         } catch (e: Exception) {
             android.util.Log.w("ProfileView", "Error extracting name from email: ${e.message}")
-            "User"
+            stringResource(R.string.unknown)
         }
     } else {
-        "User"
+        stringResource(R.string.unknown)
     }
     
     // Fix: Handle empty strings properly (not just null)
@@ -179,7 +172,7 @@ fun ProfileView(
         val formatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         formatter.format(date)
     } else {
-        "Unknown"
+        stringResource(R.string.unknown)
     }
     
     Column(
@@ -253,7 +246,7 @@ fun ProfileView(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
-                        contentDescription = "Profile Picture",
+                        contentDescription = stringResource(R.string.profile),
                         modifier = Modifier.size(50.dp),
                         tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -261,35 +254,15 @@ fun ProfileView(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // User Name with Edit Functionality
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = userName,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 22.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        onClick = { 
-                            newName = userName
-                            showEditNameDialog = true 
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(id = R.string.edit_name),
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                // User Name
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 
 //                // Debug information (temporary)
 //                Text(
@@ -332,13 +305,13 @@ fun ProfileView(
                 // User Info Sections
                 ProfileInfoSection(
                     icon = Icons.Default.Email,
-                    title = "Email",
+                    title = R.string.email,
                     value = userEmail
                 )
                 
                 ProfileInfoSection(
                     icon = Icons.Default.CalendarToday,
-                    title = "Joined",
+                    title = R.string.joined,
                     value = formattedJoinedDate
                 )
                 
@@ -347,21 +320,53 @@ fun ProfileView(
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        // Buttons Row
-        Row(
+        // Buttons Column
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Settings Button
+            // History Button
             Button(
-                onClick = onSettingsClick,
+                onClick = onHistoryClick,
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.secondary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = stringResource(id = R.string.analysis_history),
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSecondary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(id = R.string.view_history),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+            
+            // Settings and Logout Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Settings Button
+                Button(
+                    onClick = onSettingsClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -390,31 +395,23 @@ fun ProfileView(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error
                 ),
-                shape = RoundedCornerShape(12.dp),
-                enabled = !isLoading
+                shape = RoundedCornerShape(12.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        color = MaterialTheme.colorScheme.onError,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = stringResource(id = R.string.logout),
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onError
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Logout,
+                    contentDescription = stringResource(id = R.string.logout),
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onError
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    if (isLoading) stringResource(id = R.string.logging_out) else stringResource(id = R.string.logout),
+                    stringResource(id = R.string.logout),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
                     color = MaterialTheme.colorScheme.onError
                 )
+                }
             }
         }
         
@@ -467,55 +464,6 @@ fun ProfileView(
         )
     }
     
-    
-    // Edit Name Dialog
-    if (showEditNameDialog) {
-        AlertDialog(
-            onDismissRequest = { showEditNameDialog = false },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.edit_name),
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            },
-            text = {
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    label = { Text(stringResource(id = R.string.enter_new_name)) },
-                    placeholder = { Text(stringResource(id = R.string.name_hint_edit)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (newName.isNotBlank()) {
-                            onUpdateName(newName)
-                            showEditNameDialog = false
-                        }
-                    },
-                    enabled = newName.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(stringResource(id = R.string.save_changes))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showEditNameDialog = false }
-                ) {
-                    Text(stringResource(id = R.string.cancel_edit))
-                }
-            }
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -526,6 +474,7 @@ fun ProfileViewPreview() {
         onBackToHome = {},
         onLogoutClick = {},
         onSettingsClick = {},
+        onHistoryClick = {},
         currentUser = null, // Provide a mock FirebaseUser if needed for preview
         userData = mapOf("name" to "John Doe", "createdAt" to System.currentTimeMillis()),
         isLoading = false

@@ -9,5 +9,8 @@
         
         <!-- Enable dynamic colors for Android 12+ -->
         <item name="android:colorAccent">@color/md_theme_light_primary</item>
+
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 </resources>

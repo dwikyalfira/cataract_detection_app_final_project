@@ -44,7 +44,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.dicoding.cataract_detection_app_final_project.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,10 +75,10 @@ fun LoginView(
                 .padding(vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "👁️",
-                fontSize = 64.sp
-            )
+//            Text(
+//                text = "👁️",
+//                fontSize = 64.sp
+//            )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(id = R.string.app_name),
@@ -242,4 +241,3 @@ fun LoginView(
 fun LoginViewPreview() {
     LoginView()
 }
-

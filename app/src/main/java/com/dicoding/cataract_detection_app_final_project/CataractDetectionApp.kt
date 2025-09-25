@@ -44,10 +44,17 @@ class CataractDetectionApp : Application() {
     override fun onCreate() {
         super.onCreate()
         
-        // Force set Indonesian as default language (always)
+        // Get current language preference
         val prefs = getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        prefs.edit().putString("language", UserPreferences.LANG_INDONESIAN).apply()
-        android.util.Log.d("CataractDetectionApp", "Force set Indonesian as default language")
+        val currentLanguage = prefs.getString("language", UserPreferences.LANG_INDONESIAN) ?: UserPreferences.LANG_INDONESIAN
+        
+        // Only set Indonesian as default if no language is set
+        if (!prefs.contains("language")) {
+            prefs.edit().putString("language", UserPreferences.LANG_INDONESIAN).apply()
+            android.util.Log.d("CataractDetectionApp", "Set Indonesian as default language (no language was set)")
+        } else {
+            android.util.Log.d("CataractDetectionApp", "Current language from preferences: $currentLanguage")
+        }
         
         // Check internet connectivity before initializing Firebase
         if (isNetworkAvailable()) {
@@ -69,8 +76,6 @@ class CataractDetectionApp : Application() {
         // Initialize DataStore from SharedPreferences if needed
         runBlocking {
             userPreferences.initializeFromSharedPreferences()
-            // Force set Indonesian as default
-            userPreferences.forceSetIndonesian()
         }
         
         // Set theme mode

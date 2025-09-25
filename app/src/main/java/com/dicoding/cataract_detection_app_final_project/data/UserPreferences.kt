@@ -89,14 +89,14 @@ class UserPreferences(private val context: Context) {
             prefs.edit().putString("language", language).apply()
         }
         
-        // Sync theme if not in DataStore but exists in SharedPreferences
+        // Initialize theme mode to system if not set
         if (currentData[THEME_MODE] == null) {
-            val theme = prefs.getString("theme_mode", null)
-            if (theme != null) {
-                context.dataStore.edit { preferences ->
-                    preferences[THEME_MODE] = theme
-                }
+            val theme = prefs.getString("theme_mode", THEME_SYSTEM) ?: THEME_SYSTEM
+            context.dataStore.edit { preferences ->
+                preferences[THEME_MODE] = theme
             }
+            // Also update SharedPreferences
+            prefs.edit().putString("theme_mode", theme).apply()
         }
     }
     
@@ -108,5 +108,15 @@ class UserPreferences(private val context: Context) {
         val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
         prefs.edit().putString("language", LANG_INDONESIAN).apply()
         android.util.Log.d("UserPreferences", "Force set language to Indonesian")
+    }
+    
+    // Force set language to English (for testing/debugging)
+    suspend fun forceSetEnglish() {
+        context.dataStore.edit { preferences ->
+            preferences[LANGUAGE] = LANG_ENGLISH
+        }
+        val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
+        prefs.edit().putString("language", LANG_ENGLISH).apply()
+        android.util.Log.d("UserPreferences", "Force set language to English")
     }
 }
