@@ -45,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        mlModelBinding = true
     }
     
     packaging {
@@ -77,11 +78,11 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     
     // Gson for JSON serialization
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.code.gson:gson:2.13.2")
     
     // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.3")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
@@ -89,7 +90,7 @@ dependencies {
     implementation(libs.androidx.foundation)
     
     // Image loading
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     
     // Firebase
     implementation(platform(libs.firebase.bom))
@@ -98,6 +99,8 @@ dependencies {
 
     implementation(libs.firebase.ui.auth)
     implementation(libs.material)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.foundation)
     // Removed firebase.crashlytics.buildtools to fix 16 KB page size compatibility
 
     testImplementation(libs.junit)
@@ -109,6 +112,22 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // In your app/build.gradle.kts dependencies block
-    implementation("androidx.compose.material3:material3:1.3.2") // Or a newer stable/beta version
+    implementation("androidx.compose.material3:material3:1.4.0") // Or a newer stable/beta version
+
+    // TensorFlow Lite dependencies
+    implementation("org.tensorflow:tensorflow-lite:2.14.0") {
+        exclude(group = "com.google.ai.edge.litert", module = "litert-api")
+    }
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0") {
+        exclude(group = "com.google.ai.edge.litert", module = "litert-api")
+    }
+    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.14.0")
+
+    // Global exclusion for conflicting litert-api dependency
+    configurations.all {
+        exclude(group = "com.google.ai.edge.litert", module = "litert-api")
+    }
 
 }

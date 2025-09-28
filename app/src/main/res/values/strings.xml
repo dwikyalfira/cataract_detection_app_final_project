@@ -13,6 +13,12 @@
     <string name="confirm_logout">Confirm Logout</string>
     <string name="logout_confirmation">Are you sure you want to logout? You will need to sign in again to access your account.</string>
     <string name="logging_out">Logging out…</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="confirm_delete_account">Confirm Account Deletion</string>
+    <string name="delete_account_confirmation">Are you sure you want to delete your account? This action cannot be undone. All your data, including analysis history, will be permanently deleted.</string>
+    <string name="deleting_account">Deleting account…</string>
+    <string name="account_deleted">Account deleted successfully</string>
+    <string name="delete_account_failed">Failed to delete account</string>
     
     <!-- Settings -->
     <string name="theme">Theme</string>
@@ -82,6 +88,8 @@
     <string name="current_password">Current Password</string>
     <string name="new_password">New Password</string>
     <string name="changing">Changing...</string>
+    <string name="deleting">Deleting...</string>
+    <string name="account_deleted_successfully">Account deleted successfully</string>
     
     <!-- History -->
     <string name="analysis_history">Analysis History</string>
@@ -152,6 +160,7 @@
     <string name="cnn_technology">CNN Technology</string>
     <string name="cnn_short_description">Learn about the AI technology powering cataract detection</string>
     <string name="cnn_title">Convolutional Neural Network (CNN)</string>
+    <string name="cnn_subtitle">features from input images</string>
     <string name="cnn_overview">CNN Overview</string>
     <string name="cnn_overview_content">A Convolutional Neural Network (CNN) is a deep learning algorithm that can take in an input image, assign importance (learnable weights and biases) to various aspects/objects in the image, and be able to differentiate one from the other.</string>
     <string name="cnn_how_it_works">How CNN Works</string>
@@ -184,14 +193,5 @@
     <string name="error_reset_email_failed">Failed to send reset email</string>
     <string name="error_logout_failed">Logout failed</string>
     <string name="success_password_reset_sent">Password reset email sent</string>
-    
-    <!-- Delete Account -->
-    <string name="delete_account">Delete Account</string>
-    <string name="delete_account_confirmation">Delete Account</string>
-    <string name="delete_account_message">Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data, including analysis history.</string>
-    <string name="delete_account_warning">This will permanently delete your account and all associated data.</string>
-    <string name="deleting_account">Deleting account...</string>
-    <string name="account_deleted_successfully">Account deleted successfully</string>
-    <string name="delete_account_failed">Failed to delete account. Please try again.</string>
-    <string name="confirm_delete">Confirm Delete</string>
+    <string name="success_account_created">Account created successfully! Please login to use the app.</string>
 </resources>

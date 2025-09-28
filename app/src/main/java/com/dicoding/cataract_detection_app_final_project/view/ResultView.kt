@@ -41,6 +41,7 @@ import coil.request.ImageRequest
 @Composable
 fun ResultView(
     predictionResult: String = "Normal",
+    confidenceScore: Float = 0.85f,
     scannedImageUri: String? = null,
     isNavigating: Boolean = false,
     onBackToHome: () -> Unit = {},
@@ -131,9 +132,9 @@ fun ResultView(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Confidence Score (dummy)
+                // Confidence Score
                 Text(
-                    text = "Confidence: 85%",
+                    text = "Confidence: ${(confidenceScore * 100).toInt()}%",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

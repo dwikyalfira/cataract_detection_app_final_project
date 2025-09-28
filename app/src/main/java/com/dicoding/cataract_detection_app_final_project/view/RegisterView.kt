@@ -71,12 +71,13 @@ fun RegisterView(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
-
-    // Show dialog when registration is successful
+    // Redirect immediately when registration is successful
     LaunchedEffect(successMessage) {
         if (successMessage != null) {
-            showSuccessDialog = true
+            // Clear registration state and redirect to login immediately
+            onClearRegistrationState()
+            onClearRegistrationScreenState()
+            onLoginClick()
         }
     }
 
@@ -305,94 +306,8 @@ fun RegisterView(
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
-
-    // Registration Success Dialog
-    if (showSuccessDialog) {
-        RegistrationSuccessDialog(
-            onDismiss = {
-                showSuccessDialog = false
-            },
-            onLoginClick = {
-                showSuccessDialog = false
-                onClearRegistrationState()
-                onClearRegistrationScreenState()
-                onLoginClick()
-            }
-        )
-    }
 }
 
-@Composable
-fun RegistrationSuccessDialog(
-    onDismiss: () -> Unit,
-    onLoginClick: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Success",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Text(
-                    text = "Account Created Successfully!",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "Your account has been created successfully!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "For security reasons, you need to login with your email and password to access the app.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onLoginClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "Go to Login Page",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text(
-                    text = "Stay Here",
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        },
-        shape = RoundedCornerShape(16.dp)
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)

@@ -1,11 +1,13 @@
 package com.dicoding.cataract_detection_app_final_project.presenter
 
 import android.content.Context
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.dicoding.cataract_detection_app_final_project.data.AnalysisHistory
 import com.dicoding.cataract_detection_app_final_project.model.CataractModel
 import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
+import com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -16,9 +18,11 @@ import kotlinx.coroutines.launch
  */
 class MainPresenter {
     
-    private val cataractModel = CataractModel()
+    private var cataractModel: CataractModel? = null
     private var historyRepository: HistoryRepository? = null
+    private var imageStorageManager: ImageStorageManager? = null
     private var currentUserId: String = ""
+    private var context: Context? = null
     
     // UI States
     private val _currentScreen = mutableStateOf(Screen.Splash)
@@ -26,6 +30,9 @@ class MainPresenter {
     
     private val _predictionResult = mutableStateOf("")
     val predictionResult: State<String> = _predictionResult
+    
+    private val _confidenceScore = mutableStateOf(0.0f)
+    val confidenceScore: State<Float> = _confidenceScore
     
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
@@ -55,8 +62,12 @@ class MainPresenter {
      * Initialize history repository and set current user
      */
     fun initializeHistory(context: Context, userId: String) {
-        historyRepository = HistoryRepository(context)
-        currentUserId = userId
+        this.context = context
+        this.historyRepository = HistoryRepository(context)
+        this.imageStorageManager = ImageStorageManager(context)
+        this.currentUserId = userId
+        this.cataractModel = CataractModel(context)
+        android.util.Log.d("MainPresenter", "initializeHistory - Model ready after init: ${cataractModel?.isModelReady()}")
     }
     
     /**
@@ -89,33 +100,6 @@ class MainPresenter {
         _currentScreen.value = screen
     }
     
-    /**
-     * Handle image pick (dummy implementation)
-     */
-    fun onPickImage() {
-        _isLoading.value = true
-        // Simulate processing delay
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(2000) // 2 second delay
-            _predictionResult.value = cataractModel.predictCataract("dummy_path")
-            _isLoading.value = false
-            navigateTo(Screen.Result)
-        }
-    }
-    
-    /**
-     * Handle image capture (dummy implementation)
-     */
-    fun onCaptureImage() {
-        _isLoading.value = true
-        // Simulate processing delay
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(2000) // 2 second delay
-            _predictionResult.value = cataractModel.predictCataract("dummy_path")
-            _isLoading.value = false
-            navigateTo(Screen.Result)
-        }
-    }
     
     /**
      * Handle image selected from gallery or camera (preview mode)
@@ -129,30 +113,58 @@ class MainPresenter {
      */
     fun onProceedWithImage() {
         val imageUri = _selectedImageUri.value
-        if (imageUri != null) {
+        android.util.Log.d("MainPresenter", "onProceedWithImage called with URI: $imageUri")
+        android.util.Log.d("MainPresenter", "Model ready: ${cataractModel?.isModelReady()}")
+        
+        if (imageUri != null && cataractModel != null) {
             _isLoading.value = true
             // Store the scanned image URI for display in results
             _scannedImageUri.value = imageUri
-            // Simulate processing delay
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(2000) // 2 second delay
-                val result = cataractModel.predictCataract(imageUri)
-                _predictionResult.value = result
-                
-                // Save to history if repository is initialized
-                historyRepository?.let { repo ->
-                    val history = AnalysisHistory(
-                        imageUri = imageUri,
-                        predictionResult = result,
-                        confidence = 0.85f, // Dummy confidence value
-                        userId = currentUserId
-                    )
-                    repo.saveAnalysisHistory(history)
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    android.util.Log.d("MainPresenter", "Starting TFLite inference...")
+                    // Run inference on background thread
+                    val uri = Uri.parse(imageUri)
+                    val result = cataractModel!!.predictCataract(uri)
+                    val confidence = cataractModel!!.getConfidenceScore()
+                    
+                    android.util.Log.d("MainPresenter", "Inference complete - Result: $result, Confidence: $confidence")
+                    
+                    // Copy image to internal storage for persistence
+                    val persistentImageUri = imageStorageManager?.copyImageToInternalStorage(uri) ?: imageUri
+                    
+                    // Switch back to main thread for UI updates
+                    CoroutineScope(Dispatchers.Main).launch {
+                        _predictionResult.value = result
+                        _confidenceScore.value = confidence
+                        
+                        // Save to history if repository is initialized
+                        historyRepository?.let { repo ->
+                            val history = AnalysisHistory(
+                                imageUri = persistentImageUri,
+                                predictionResult = result,
+                                confidence = confidence,
+                                userId = currentUserId
+                            )
+                            repo.saveAnalysisHistory(history)
+                        }
+                        
+                        _isLoading.value = false
+                        onNavigateToResult?.invoke()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainPresenter", "Error during inference", e)
+                    e.printStackTrace()
+                    CoroutineScope(Dispatchers.Main).launch {
+                        _predictionResult.value = "Error"
+                        _isLoading.value = false
+                        onNavigateToResult?.invoke()
+                    }
                 }
-                
-                _isLoading.value = false
-                onNavigateToResult?.invoke()
             }
+        } else {
+            android.util.Log.e("MainPresenter", "Cannot proceed - imageUri: $imageUri, model: $cataractModel")
         }
     }
     
@@ -170,6 +182,7 @@ class MainPresenter {
         _selectedImageUri.value = null
         _scannedImageUri.value = null
         _predictionResult.value = ""
+        _confidenceScore.value = 0.0f
         _isLoading.value = false
         _isFromHistory.value = false
         _currentHistoryForViewing.value = null
@@ -208,6 +221,16 @@ class MainPresenter {
             delay(2500) // 2.5 seconds
             navigateTo(Screen.Home)
         }
+    }
+    
+    /**
+     * Clean up resources when presenter is no longer needed
+     */
+    fun cleanup() {
+        cataractModel?.close()
+        cataractModel = null
+        historyRepository = null
+        context = null
     }
 }
 

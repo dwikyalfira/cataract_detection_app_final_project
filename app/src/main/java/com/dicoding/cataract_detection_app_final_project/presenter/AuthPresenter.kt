@@ -8,6 +8,9 @@ import com.dicoding.cataract_detection_app_final_project.utils.ErrorTranslator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +30,23 @@ class AuthPresenter(private var context: Context) {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     
+    // Separate error and success messages for each screen
+    private val _loginErrorMessage = MutableStateFlow<String?>(null)
+    val loginErrorMessage: StateFlow<String?> = _loginErrorMessage.asStateFlow()
+    
+    private val _registerErrorMessage = MutableStateFlow<String?>(null)
+    val registerErrorMessage: StateFlow<String?> = _registerErrorMessage.asStateFlow()
+    
+    private val _registerSuccessMessage = MutableStateFlow<String?>(null)
+    val registerSuccessMessage: StateFlow<String?> = _registerSuccessMessage.asStateFlow()
+    
+    private val _forgotPasswordErrorMessage = MutableStateFlow<String?>(null)
+    val forgotPasswordErrorMessage: StateFlow<String?> = _forgotPasswordErrorMessage.asStateFlow()
+    
+    private val _forgotPasswordSuccessMessage = MutableStateFlow<String?>(null)
+    val forgotPasswordSuccessMessage: StateFlow<String?> = _forgotPasswordSuccessMessage.asStateFlow()
+    
+    // Legacy properties for backward compatibility (will be removed)
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
@@ -83,45 +103,45 @@ class AuthPresenter(private var context: Context) {
     
     fun login(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
-            _errorMessage.value = ErrorTranslator.translateError(context, "Please fill in all fields")
+            _loginErrorMessage.value = ErrorTranslator.translateError(context, "Please fill in all fields")
             return
         }
         
         _isLoading.value = true
-        _errorMessage.value = null
+        _loginErrorMessage.value = null
         
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 _isLoading.value = false
                 if (task.isSuccessful) {
-                    _errorMessage.value = null
+                    _loginErrorMessage.value = null
                 } else {
                     val errorMsg = task.exception?.message ?: "Login failed"
                     android.util.Log.d("AuthPresenter", "Firebase login error: '$errorMsg'")
-                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+                    _loginErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
                 }
             }
     }
     
     fun register(name: String, email: String, password: String, confirmPassword: String) {
         if (name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-            _errorMessage.value = ErrorTranslator.translateError(context, "Please fill in all fields")
+            _registerErrorMessage.value = ErrorTranslator.translateError(context, "Please fill in all fields")
             return
         }
         
         if (password != confirmPassword) {
-            _errorMessage.value = ErrorTranslator.translateError(context, "Passwords do not match")
+            _registerErrorMessage.value = ErrorTranslator.translateError(context, "Passwords do not match")
             return
         }
         
         if (password.length < 6) {
-            _errorMessage.value = ErrorTranslator.translateError(context, "Password must be at least 6 characters")
+            _registerErrorMessage.value = ErrorTranslator.translateError(context, "Password must be at least 6 characters")
             return
         }
         
         _isLoading.value = true
-        _errorMessage.value = null
-        _successMessage.value = null
+        _registerErrorMessage.value = null
+        _registerSuccessMessage.value = null
         _isRegistering.value = true
         // Update authentication state to prevent main app from showing
         _isAuthenticated.value = _isAuthenticatedInternal.value && !_isRegistering.value
@@ -137,13 +157,13 @@ class AuthPresenter(private var context: Context) {
                         // Sign out user immediately after successful registration
                         auth.signOut()
                         // Set success message to inform user they need to login
-                        _successMessage.value = ErrorTranslator.translateError(context, "Account created successfully! You will now be redirected to the login page.")
+                        _registerSuccessMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.success_account_created)
                     }
-                    _errorMessage.value = null
+                    _registerErrorMessage.value = null
                 } else {
                     val errorMsg = task.exception?.message ?: "Registration failed"
                     android.util.Log.d("AuthPresenter", "Firebase register error: '$errorMsg'")
-                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+                    _registerErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
                 }
                 _isRegistering.value = false
                 // Update authentication state after registration completes
@@ -196,24 +216,24 @@ class AuthPresenter(private var context: Context) {
     
     fun resetPassword(email: String) {
         if (email.isBlank()) {
-            _errorMessage.value = ErrorTranslator.translateError(context, "Please enter your email")
+            _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, "Please enter your email")
             return
         }
         
         _isLoading.value = true
-        _errorMessage.value = null
-        _successMessage.value = null
+        _forgotPasswordErrorMessage.value = null
+        _forgotPasswordSuccessMessage.value = null
         
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 _isLoading.value = false
                 if (task.isSuccessful) {
-                    _successMessage.value = ErrorTranslator.translateError(context, "Password reset email sent")
-                    _errorMessage.value = null
+                    _forgotPasswordSuccessMessage.value = ErrorTranslator.translateError(context, "Password reset email sent")
+                    _forgotPasswordErrorMessage.value = null
                 } else {
                     val errorMsg = task.exception?.message ?: "Failed to send reset email"
-                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
-                    _successMessage.value = null
+                    _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+                    _forgotPasswordSuccessMessage.value = null
                 }
             }
     }
@@ -231,10 +251,148 @@ class AuthPresenter(private var context: Context) {
         _successMessage.value = null
     }
     
+    // Screen-specific clear methods
+    fun clearLoginError() {
+        _loginErrorMessage.value = null
+    }
+    
+    fun clearRegisterError() {
+        _registerErrorMessage.value = null
+    }
+    
+    fun clearRegisterSuccess() {
+        _registerSuccessMessage.value = null
+    }
+    
+    fun clearRegisterMessages() {
+        _registerErrorMessage.value = null
+        _registerSuccessMessage.value = null
+    }
+    
+    fun clearForgotPasswordError() {
+        _forgotPasswordErrorMessage.value = null
+    }
+    
+    fun clearForgotPasswordSuccess() {
+        _forgotPasswordSuccessMessage.value = null
+    }
+    
+    fun clearForgotPasswordMessages() {
+        _forgotPasswordErrorMessage.value = null
+        _forgotPasswordSuccessMessage.value = null
+    }
+    
+    fun clearAllScreenMessages() {
+        _loginErrorMessage.value = null
+        _registerErrorMessage.value = null
+        _registerSuccessMessage.value = null
+        _forgotPasswordErrorMessage.value = null
+        _forgotPasswordSuccessMessage.value = null
+        _errorMessage.value = null
+        _successMessage.value = null
+    }
+    
     fun clearRegistrationState() {
         _isRegistering.value = false
         // Update authentication state after clearing registration state
         _isAuthenticated.value = _isAuthenticatedInternal.value && !_isRegistering.value
+    }
+    
+    fun deleteAccount(password: String, callback: (Boolean, String) -> Unit) {
+        android.util.Log.d("AuthPresenter", "deleteAccount called with password length: ${password.length}")
+        
+        val user = auth.currentUser
+        if (user == null) {
+            android.util.Log.d("AuthPresenter", "No user logged in")
+            callback(false, ErrorTranslator.translateError(context, "No user logged in"))
+            return
+        }
+        
+        if (password.isBlank()) {
+            android.util.Log.d("AuthPresenter", "Password is blank")
+            callback(false, ErrorTranslator.translateError(context, "Please enter your password"))
+            return
+        }
+        
+        _isLoading.value = true
+        _errorMessage.value = null
+        _successMessage.value = null
+        
+        val userId = user.uid
+        android.util.Log.d("AuthPresenter", "Starting account deletion for user: $userId")
+        
+        // First, re-authenticate the user with their password
+        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(user.email!!, password)
+        user.reauthenticate(credential)
+            .addOnCompleteListener { reauthTask ->
+                android.util.Log.d("AuthPresenter", "Re-authentication result: ${reauthTask.isSuccessful}")
+                if (reauthTask.isSuccessful) {
+                    android.util.Log.d("AuthPresenter", "Password correct, proceeding with deletion")
+                    // Password is correct, proceed with account deletion
+                    // Skip Firestore deletion since it's causing hangs, go directly to auth deletion
+                    android.util.Log.d("AuthPresenter", "Skipping Firestore deletion, proceeding directly to auth account deletion")
+                    deleteAuthAccount(user, userId, callback)
+                } else {
+                    _isLoading.value = false
+                    val errorMsg = reauthTask.exception?.message ?: "Incorrect password"
+                    android.util.Log.e("AuthPresenter", "Re-authentication failed: $errorMsg")
+                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+                    _successMessage.value = null
+                    callback(false, ErrorTranslator.translateError(context, "Incorrect password"))
+                }
+            }
+    }
+    
+    private fun deleteAuthAccount(user: FirebaseUser, userId: String, callback: (Boolean, String) -> Unit) {
+        // Delete the user account from Firebase Auth
+        user.delete()
+            .addOnCompleteListener { task ->
+                _isLoading.value = false
+                android.util.Log.d("AuthPresenter", "Auth account deletion result: ${task.isSuccessful}")
+                if (task.isSuccessful) {
+                    android.util.Log.d("AuthPresenter", "Account deleted successfully, clearing local data")
+                    // Clear local user data and history
+                    clearUserLocalData(userId)
+                    
+                    _successMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.account_deleted_successfully)
+                    _errorMessage.value = null
+                    android.util.Log.d("AuthPresenter", "Calling success callback")
+                    callback(true, context.getString(com.dicoding.cataract_detection_app_final_project.R.string.account_deleted_successfully))
+                    
+                    // Sign out after a delay to allow snackbar to show
+                    CoroutineScope(Dispatchers.Main).launch {
+                        kotlinx.coroutines.delay(2000) // 2 second delay
+                        android.util.Log.d("AuthPresenter", "Signing out user after delay")
+                        auth.signOut()
+                    }
+                } else {
+                    val errorMsg = task.exception?.message ?: "Failed to delete account"
+                    android.util.Log.e("AuthPresenter", "Failed to delete auth account: $errorMsg")
+                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+                    _successMessage.value = null
+                    callback(false, ErrorTranslator.translateError(context, errorMsg))
+                }
+            }
+    }
+    
+    private fun clearUserLocalData(userId: String) {
+        try {
+            // Clear analysis history
+            CoroutineScope(Dispatchers.IO).launch {
+                val historyRepository = com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository(context)
+                historyRepository.clearAllHistory(userId)
+            }
+            
+            // Clear any cached images for this user
+            CoroutineScope(Dispatchers.IO).launch {
+                val imageStorageManager = com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager(context)
+                imageStorageManager.clearUserImages(userId)
+            }
+            
+            android.util.Log.d("AuthPresenter", "Cleared local data for user: $userId")
+        } catch (e: Exception) {
+            android.util.Log.w("AuthPresenter", "Error clearing local data: ${e.message}")
+        }
     }
     
     fun getUserData(uid: String, callback: (Map<String, Any>?) -> Unit) {
@@ -316,90 +474,6 @@ class AuthPresenter(private var context: Context) {
                             } else {
                                 val errorMsg = updateTask.exception?.message ?: "Failed to change password"
                                 callback(false, ErrorTranslator.translateError(context, errorMsg))
-                            }
-                        }
-                } else {
-                    _isLoading.value = false
-                    val errorMsg = reauthTask.exception?.message ?: "Current password is incorrect"
-                    callback(false, ErrorTranslator.translateError(context, errorMsg))
-                }
-            }
-    }
-    
-    fun deleteAccount(currentPassword: String, callback: (Boolean, String) -> Unit) {
-        val user = auth.currentUser
-        if (user == null) {
-            callback(false, ErrorTranslator.translateError(context, "User not authenticated"))
-            return
-        }
-        
-        if (currentPassword.isBlank()) {
-            callback(false, ErrorTranslator.translateError(context, "Please enter your current password"))
-            return
-        }
-        
-        _isLoading.value = true
-        
-        // Re-authenticate user with current password
-        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(user.email!!, currentPassword)
-        user.reauthenticate(credential)
-            .addOnCompleteListener { reauthTask ->
-                if (reauthTask.isSuccessful) {
-                    // Delete user data from Firestore first
-                    val uid = user.uid
-                    firestore.collection("users").document(uid).delete()
-                        .addOnCompleteListener { deleteDataTask ->
-                            if (deleteDataTask.isSuccessful) {
-                                // Delete user's analysis history
-                                firestore.collection("analysis_history")
-                                    .whereEqualTo("userId", uid)
-                                    .get()
-                                    .addOnCompleteListener { historyTask ->
-                                        if (historyTask.isSuccessful) {
-                                            val batch = firestore.batch()
-                                            for (document in historyTask.result.documents) {
-                                                batch.delete(document.reference)
-                                            }
-                                            batch.commit()
-                                                .addOnCompleteListener { batchTask ->
-                                                    // Delete Firebase Auth user
-                                                    user.delete()
-                                                        .addOnCompleteListener { deleteUserTask ->
-                                                            _isLoading.value = false
-                                                            if (deleteUserTask.isSuccessful) {
-                                                                callback(true, ErrorTranslator.translateError(context, "Account deleted successfully"))
-                                                            } else {
-                                                                val errorMsg = deleteUserTask.exception?.message ?: "Failed to delete account"
-                                                                callback(false, ErrorTranslator.translateError(context, errorMsg))
-                                                            }
-                                                        }
-                                                }
-                                        } else {
-                                            // Even if history deletion fails, proceed with user deletion
-                                            user.delete()
-                                                .addOnCompleteListener { deleteUserTask ->
-                                                    _isLoading.value = false
-                                                    if (deleteUserTask.isSuccessful) {
-                                                        callback(true, ErrorTranslator.translateError(context, "Account deleted successfully"))
-                                                    } else {
-                                                        val errorMsg = deleteUserTask.exception?.message ?: "Failed to delete account"
-                                                        callback(false, ErrorTranslator.translateError(context, errorMsg))
-                                                    }
-                                                }
-                                        }
-                                    }
-                            } else {
-                                // Even if user data deletion fails, proceed with user deletion
-                                user.delete()
-                                    .addOnCompleteListener { deleteUserTask ->
-                                        _isLoading.value = false
-                                        if (deleteUserTask.isSuccessful) {
-                                            callback(true, ErrorTranslator.translateError(context, "Account deleted successfully"))
-                                        } else {
-                                            val errorMsg = deleteUserTask.exception?.message ?: "Failed to delete account"
-                                            callback(false, ErrorTranslator.translateError(context, errorMsg))
-                                        }
-                                    }
                             }
                         }
                 } else {

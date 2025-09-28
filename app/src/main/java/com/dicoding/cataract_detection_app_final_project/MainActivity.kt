@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -59,6 +60,7 @@ import com.dicoding.cataract_detection_app_final_project.presenter.MainPresenter
 import com.dicoding.cataract_detection_app_final_project.presenter.Screen
 import com.dicoding.cataract_detection_app_final_project.theme.CataractDetectionExpressiveTheme
 import com.dicoding.cataract_detection_app_final_project.utils.ImagePicker
+import com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager
 import com.dicoding.cataract_detection_app_final_project.view.CNNExplanationView
 import com.dicoding.cataract_detection_app_final_project.view.CheckView
 import com.dicoding.cataract_detection_app_final_project.view.ForgotPasswordView
@@ -290,6 +292,15 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
     val currentScreen by presenter.currentScreen
     val isAuthenticated by authPresenter.isAuthenticated.collectAsState()
     val authIsLoading by authPresenter.isLoading.collectAsState()
+    
+    // Screen-specific error and success messages
+    val loginErrorMessage by authPresenter.loginErrorMessage.collectAsState()
+    val registerErrorMessage by authPresenter.registerErrorMessage.collectAsState()
+    val registerSuccessMessage by authPresenter.registerSuccessMessage.collectAsState()
+    val forgotPasswordErrorMessage by authPresenter.forgotPasswordErrorMessage.collectAsState()
+    val forgotPasswordSuccessMessage by authPresenter.forgotPasswordSuccessMessage.collectAsState()
+    
+    // Legacy messages (for backward compatibility)
     val authErrorMessage by authPresenter.errorMessage.collectAsState()
     val authSuccessMessage by authPresenter.successMessage.collectAsState()
     val currentUser by authPresenter.currentUser.collectAsState()
@@ -303,6 +314,14 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
         }
     }
 
+    // Show toast on login page when registration is successful
+    LaunchedEffect(registerSuccessMessage) {
+        registerSuccessMessage?.let {
+            // Show toast on login page
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+        }
+    }
+
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             authPresenter.getUserData(user.uid) { data ->
@@ -310,6 +329,12 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
             }
             // Initialize history repository
             presenter.initializeHistory(context, user.uid)
+            
+            // Clean up old images (run in background)
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                val imageStorageManager = ImageStorageManager(context)
+                imageStorageManager.cleanupOldImages(30) // Keep images for 30 days
+            }
         }
     }
 
@@ -332,7 +357,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         navController.navigate(AuthRoute.ForgotPassword.route)
                     },
                     isLoading = authIsLoading,
-                    errorMessage = authErrorMessage
+                    errorMessage = loginErrorMessage
                 )
             }
             composable(AuthRoute.Register.route) {
@@ -359,8 +384,8 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         isOnRegistrationScreen = false
                     },
                     isLoading = authIsLoading,
-                    errorMessage = authErrorMessage,
-                    successMessage = authSuccessMessage
+                    errorMessage = registerErrorMessage,
+                    successMessage = registerSuccessMessage
                 )
             }
             composable(AuthRoute.ForgotPassword.route) {
@@ -372,8 +397,8 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         authPresenter.resetPassword(email)
                     },
                     isLoading = authIsLoading,
-                    errorMessage = authErrorMessage,
-                    successMessage = authSuccessMessage
+                    errorMessage = forgotPasswordErrorMessage,
+                    successMessage = forgotPasswordSuccessMessage
                 )
             }
         }
@@ -493,13 +518,28 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         userPreferences = userPreferences,
                         authPresenter = authPresenter,
                         onLanguageChanged = onRecreate,
+                        onDeleteAccountClick = { password, callback -> 
+                            authPresenter.deleteAccount(password, callback)
+                        },
                         scrollBehavior = scrollBehavior
                     )
                 }
                 composable(NavigationItem.Home.route) {
                     HomeView(
-                        onUploadImage = { presenter.onPickImage() },
-                        onCaptureImage = { presenter.onCaptureImage() },
+                        onUploadImage = { 
+                            imagePicker.pickImageFromGallery { uri ->
+                                if (uri != null) {
+                                    presenter.onImageSelected(uri.toString())
+                                }
+                            }
+                        },
+                        onCaptureImage = { 
+                            imagePicker.captureImageFromCamera { uri ->
+                                if (uri != null) {
+                                    presenter.onImageSelected(uri.toString())
+                                }
+                            }
+                        },
                         onNavigateToInfo = { presenter.navigateTo(Screen.Info) },
                         onNavigateToProfile = { presenter.navigateTo(Screen.Profile) },
                         onNavigateToCNN = { navController.navigate("cnn_explanation") },

@@ -52,6 +52,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +65,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
 import com.dicoding.cataract_detection_app_final_project.R
 import com.dicoding.cataract_detection_app_final_project.data.UserPreferences
 import com.dicoding.cataract_detection_app_final_project.presenter.AuthPresenter
@@ -88,6 +90,7 @@ fun SettingsView(
     userPreferences: UserPreferences,
     authPresenter: AuthPresenter,
     onLanguageChanged: () -> Unit,
+    onDeleteAccountClick: (String, (Boolean, String) -> Unit) -> Unit = { _, _ -> },
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val context = LocalContext.current
@@ -95,6 +98,10 @@ fun SettingsView(
 
     val themeMode by userPreferences.themeMode.collectAsState(initial = userPreferences.getThemeModeSync())
     val language by userPreferences.language.collectAsState(initial = userPreferences.getLanguageSync())
+    
+    // Listen to auth presenter messages
+    val authSuccessMessage by authPresenter.successMessage.collectAsState()
+    val authErrorMessage by authPresenter.errorMessage.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -136,6 +143,15 @@ fun SettingsView(
         deleteAccountPassword = ""
         showDeleteAccountPassword = false
         deleteAccountError = ""
+        isDeletingAccount = false
+    }
+    
+    // Handle auth error messages (success messages are handled in callbacks)
+    LaunchedEffect(authErrorMessage) {
+        authErrorMessage?.let { message ->
+            showSnackbar(message)
+            authPresenter.clearError()
+        }
     }
 
     Scaffold(
@@ -314,22 +330,24 @@ fun SettingsView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
-                            shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete Account",
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = stringResource(id = R.string.delete_account),
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = FontWeight.Medium
-                                )
+                                ),
+                                color = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                     }
@@ -490,7 +508,7 @@ fun SettingsView(
             )
         }
         
-        // Delete Account Dialog
+        // Delete Account Confirmation Dialog
         if (showDeleteAccountDialog) {
             AlertDialog(
                 onDismissRequest = { 
@@ -499,22 +517,19 @@ fun SettingsView(
                 },
                 title = {
                     Text(
-                        text = stringResource(id = R.string.delete_account_confirmation),
+                        text = stringResource(id = R.string.confirm_delete_account),
                         style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = MaterialTheme.colorScheme.error
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 },
                 text = {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Warning Message
                         Text(
-                            text = stringResource(id = R.string.delete_account_message),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            text = stringResource(id = R.string.delete_account_confirmation),
+                            style = MaterialTheme.typography.bodyMedium
                         )
                         
                         // Error Message
@@ -533,7 +548,7 @@ fun SettingsView(
                             )
                         }
                         
-                        // Password Field
+                        // Password Input
                         OutlinedTextField(
                             value = deleteAccountPassword,
                             onValueChange = { 
@@ -552,7 +567,8 @@ fun SettingsView(
                             },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            isError = deleteAccountError.isNotEmpty()
+                            isError = deleteAccountError.isNotEmpty(),
+                            enabled = !isDeletingAccount
                         )
                     }
                 },
@@ -565,25 +581,31 @@ fun SettingsView(
                             }
                             
                             isDeletingAccount = true
-                            deleteAccountError = "" // Clear any previous errors
-                            authPresenter.deleteAccount(deleteAccountPassword) { success, message ->
+                            deleteAccountError = ""
+                            android.util.Log.d("SettingsView", "Starting delete account process")
+                            onDeleteAccountClick(deleteAccountPassword) { success, message ->
+                                android.util.Log.d("SettingsView", "Delete account callback received - success: $success, message: $message")
                                 isDeletingAccount = false
                                 if (success) {
+                                    android.util.Log.d("SettingsView", "Account deletion successful, closing dialog and showing toast")
                                     showDeleteAccountDialog = false
                                     resetDeleteAccountFields()
-                                    showSnackbar(message) // Success message
+                                    // Use Toast instead of snackbar for better reliability
+                                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                                 } else {
-                                    deleteAccountError = message // Show error in dialog
+                                    android.util.Log.d("SettingsView", "Account deletion failed, showing error: $message")
+                                    deleteAccountError = message
                                 }
                             }
                         },
-                        enabled = !isDeletingAccount,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
-                        )
+                        ),
+                        enabled = !isDeletingAccount
                     ) {
                         Text(
-                            if (isDeletingAccount) stringResource(id = R.string.deleting_account) else stringResource(id = R.string.confirm_delete)
+                            if (isDeletingAccount) stringResource(id = R.string.deleting) else stringResource(id = R.string.delete_account),
+                            color = MaterialTheme.colorScheme.onError
                         )
                     }
                 },
@@ -592,7 +614,8 @@ fun SettingsView(
                         onClick = { 
                             showDeleteAccountDialog = false
                             resetDeleteAccountFields()
-                        }
+                        },
+                        enabled = !isDeletingAccount
                     ) {
                         Text(stringResource(id = R.string.cancel))
                     }
@@ -713,6 +736,7 @@ fun SettingsViewPreview() {
         userPreferences = UserPreferences(context),
         authPresenter = AuthPresenter(context),
         onLanguageChanged = {},
+        onDeleteAccountClick = { _, _ -> },
         scrollBehavior = null
     )
 }
