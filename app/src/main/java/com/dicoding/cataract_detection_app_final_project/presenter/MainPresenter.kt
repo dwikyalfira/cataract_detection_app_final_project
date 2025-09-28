@@ -132,7 +132,14 @@ class MainPresenter {
                     android.util.Log.d("MainPresenter", "Inference complete - Result: $result, Confidence: $confidence")
                     
                     // Copy image to internal storage for persistence
-                    val persistentImageUri = imageStorageManager?.copyImageToInternalStorage(uri) ?: imageUri
+                    val persistentImageUri = try {
+                        imageStorageManager?.copyImageToInternalStorage(uri) ?: imageUri
+                    } catch (e: Exception) {
+                        android.util.Log.e("MainPresenter", "Failed to copy image to internal storage", e)
+                        // If we can't copy the image to internal storage, we should not save it to history
+                        // as it will become inaccessible later. Instead, we'll show an error.
+                        throw Exception("Failed to save image for analysis history: ${e.message}")
+                    }
                     
                     // Switch back to main thread for UI updates
                     CoroutineScope(Dispatchers.Main).launch {
