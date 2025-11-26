@@ -27,6 +27,9 @@ class CataractModel(private val context: Context) {
     private val IMAGE_MEAN = 127.5f
     private val IMAGE_STD = 127.5f
     
+    // Confidence threshold for "Unknown" / "Not an Eye" detection
+    private val CONFIDENCE_THRESHOLD = 0.6f
+    
     init {
         // Check if model file exists in assets
         try {
@@ -123,10 +126,8 @@ class CataractModel(private val context: Context) {
             e.printStackTrace()
             modelLoaded = false
 
-            if (!modelLoaded) {
-                Log.d("CataractModel", "Attempting fallback model loading strategy")
-                tryAlternativeModelLoading()
-            }
+            Log.d("CataractModel", "Attempting fallback model loading strategy")
+            tryAlternativeModelLoading()
         }
     }
     
@@ -167,8 +168,8 @@ class CataractModel(private val context: Context) {
             loadModel()
 
             if (!modelLoaded || interpreter == null) {
-                Log.e("CataractModel", "Model still unavailable after reinitialization, using fallback prediction")
-                return getFallbackPrediction(imageUri)
+                Log.e("CataractModel", "Model still unavailable after reinitialization")
+                return "Error: Model failed to load"
             }
         }
         
@@ -183,7 +184,8 @@ class CataractModel(private val context: Context) {
             Log.d("CataractModel", "Image preprocessed, buffer size: ${inputBuffer.capacity()}")
             
             // Prepare output array
-            val outputArray = Array(1) { FloatArray(2) } // Assuming 2 classes: Normal, Cataract
+            // Model output is [1, 1] (Sigmoid activation for binary classification)
+            val outputArray = Array(1) { FloatArray(1) }
             
             // Run inference
             Log.d("CataractModel", "Running inference...")
@@ -191,20 +193,30 @@ class CataractModel(private val context: Context) {
             Log.d("CataractModel", "Inference completed")
             
             // Process results
-            val probabilities = outputArray[0]
-            val normalProb = probabilities[0]
-            val cataractProb = probabilities[1]
+            // For sigmoid: 0.0 = Class 0 (Normal), 1.0 = Class 1 (Cataract)
+            // Threshold is usually 0.5
+            val probability = outputArray[0][0]
             
-            Log.d("CataractModel", "Raw probabilities - Normal: $normalProb, Cataract: $cataractProb")
+            Log.d("CataractModel", "Raw probability: $probability")
             
-            // Calculate confidence (max probability)
-            lastConfidence = maxOf(normalProb, cataractProb)
+            // Calculate confidence
+            // If prob > 0.5, it's Normal with confidence 'prob'
+            // If prob <= 0.5, it's Cataract with confidence '1 - prob'
+            // Calculate confidence
+            // If prob > 0.5, it's Normal with confidence 'prob'
+            // If prob <= 0.5, it's Cataract with confidence '1 - prob'
+            lastConfidence = if (probability > 0.5f) probability else 1.0f - probability
             
-            // Return prediction based on higher probability
-            val result = if (cataractProb > normalProb) {
-                "Cataract"
-            } else {
+            // Return prediction based on threshold
+            // User reported results were swapped, so we invert the logic:
+            // High probability (> 0.5) -> Normal
+            // Low probability (<= 0.5) -> Cataract
+            val result = if (lastConfidence < CONFIDENCE_THRESHOLD) {
+                "Unknown"
+            } else if (probability > 0.5f) {
                 "Normal"
+            } else {
+                "Cataract"
             }
             
             Log.d("CataractModel", "Final prediction: $result with confidence: $lastConfidence")
@@ -213,7 +225,7 @@ class CataractModel(private val context: Context) {
         } catch (e: Exception) {
             Log.e("CataractModel", "Error during prediction: ${e.message}", e)
             e.printStackTrace()
-            return getFallbackPrediction(imageUri)
+            return "Error: ${e.message}"
         }
     }
     
@@ -222,9 +234,8 @@ class CataractModel(private val context: Context) {
      */
     private fun getFallbackPrediction(imageUri: Uri): String {
         Log.d("CataractModel", "Using fallback prediction")
-        // Simple fallback - you could implement basic image analysis here
-        lastConfidence = 0.5f // Low confidence for fallback
-        return "Normal" // Default to normal for safety
+        lastConfidence = 0.0f
+        return "Error: Unknown prediction failure"
     }
     
     /**

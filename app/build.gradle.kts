@@ -17,10 +17,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-        }
+
     }
 
     buildTypes {
@@ -114,20 +111,14 @@ dependencies {
     // In your app/build.gradle.kts dependencies block
     implementation("androidx.compose.material3:material3:1.4.0") // Or a newer stable/beta version
 
-    // TensorFlow Lite dependencies
-    implementation("org.tensorflow:tensorflow-lite:2.14.0") {
-        exclude(group = "com.google.ai.edge.litert", module = "litert-api")
-    }
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.14.0") {
-        exclude(group = "com.google.ai.edge.litert", module = "litert-api")
-    }
-    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.14.0")
+    // TensorFlow Lite (LiteRT) dependencies
+    implementation("com.google.ai.edge.litert:litert:1.0.1")
+    implementation("org.tensorflow:tensorflow-lite-support:0.5.0")
+    implementation("org.tensorflow:tensorflow-lite-metadata:0.5.0")
+    // GPU Delegate (optional, but good for performance)
+    implementation("com.google.ai.edge.litert:litert-gpu:1.0.1")
 
-    // Global exclusion for conflicting litert-api dependency
-    configurations.all {
-        exclude(group = "com.google.ai.edge.litert", module = "litert-api")
-    }
+    // Image Cropper
+    implementation("com.vanniktech:android-image-cropper:4.6.0")
 
 }

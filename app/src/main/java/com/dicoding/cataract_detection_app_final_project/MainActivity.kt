@@ -71,6 +71,7 @@ import com.dicoding.cataract_detection_app_final_project.view.LoginView
 import com.dicoding.cataract_detection_app_final_project.view.ProfileView
 import com.dicoding.cataract_detection_app_final_project.view.RegisterView
 import com.dicoding.cataract_detection_app_final_project.view.ResultView
+import com.dicoding.cataract_detection_app_final_project.view.ROIView
 import com.dicoding.cataract_detection_app_final_project.view.SettingsView
 import com.dicoding.cataract_detection_app_final_project.view.SplashView
 import kotlinx.coroutines.delay
@@ -284,6 +285,9 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
     val presenter = remember { MainPresenter() }
     presenter.setNavigationCallback { 
         navController.navigate("result")
+    }
+    presenter.setROINavigationCallback {
+        navController.navigate("roi_adjustment")
     }
     val authPresenter = remember { AuthPresenter(context) }
     val topAppBarState = rememberTopAppBarState()
@@ -580,6 +584,9 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                                 }
                             }
                         },
+                        onImageCropped = { uri ->
+                            presenter.onImageSelected(uri.toString())
+                        },
                         selectedImageUri = presenter.selectedImageUri.value,
                         isLoading = presenter.isLoading.value,
                         scrollBehavior = scrollBehavior
@@ -596,6 +603,21 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         userData = userData,
                         isLoading = authIsLoading
                     )
+                }
+                composable("roi_adjustment") {
+                    val selectedImageUri = presenter.selectedImageUri.value
+                    if (selectedImageUri != null) {
+                        ROIView(
+                            imageUri = selectedImageUri,
+                            onROIConfirmed = { roiRect, adjustments ->
+                                presenter.onROIConfirmed(roiRect, adjustments)
+                            },
+                            onCancel = {
+                                navController.popBackStack()
+                            },
+                            scrollBehavior = scrollBehavior
+                        )
+                    }
                 }
                 composable("history") {
                     HistoryView(
@@ -617,6 +639,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                 composable("result") {
                     ResultView(
                         predictionResult = presenter.predictionResult.value,
+                        confidenceScore = presenter.confidenceScore.value,
                         scannedImageUri = presenter.scannedImageUri.value,
                         isNavigating = presenter.isNavigating.value,
                         onBackToHome = { 

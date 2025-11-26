@@ -30,13 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.dicoding.cataract_detection_app_final_project.R
 
 @Composable
 fun ResultView(
@@ -59,24 +60,16 @@ fun ResultView(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-//        // Title
-//        Text(
-//            text = "Detection Result",
-//            style = MaterialTheme.typography.headlineMedium.copy(
-//                fontWeight = FontWeight.Bold,
-//                fontSize = 28.sp
-//            ),
-//            textAlign = TextAlign.Center,
-//            modifier = Modifier.padding(vertical = 24.dp)
-//        )
-        
         // Result Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            shape = RoundedCornerShape(24.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -86,8 +79,8 @@ fun ResultView(
                 if (scannedImageUri != null) {
                     Card(
                         modifier = Modifier
-                            .size(250.dp),
-                        shape = RoundedCornerShape(16.dp),
+                            .size(280.dp),
+                        shape = RoundedCornerShape(20.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         AsyncImage(
@@ -105,7 +98,7 @@ fun ResultView(
                     Box(
                         modifier = Modifier
                             .size(200.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(20.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -117,42 +110,62 @@ fun ResultView(
                     }
                 }
                 
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Localized Result Text
+                val resultText = when {
+                    predictionResult == "Normal" -> stringResource(R.string.result_normal)
+                    predictionResult == "Cataract" -> stringResource(R.string.result_cataract)
+                    predictionResult == "Unknown" -> stringResource(R.string.result_unknown)
+                    predictionResult.startsWith("Error") -> stringResource(R.string.result_error)
+                    else -> predictionResult
+                }
+
+                // Combined Result and Confidence
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = resultText,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = when (predictionResult) {
+                            "Normal" -> MaterialTheme.colorScheme.primary
+                            "Cataract" -> MaterialTheme.colorScheme.error
+                            "Unknown" -> Color(0xFFFF9800) // Orange for warning
+                            else -> MaterialTheme.colorScheme.error
+                        },
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "Confidence: ${(confidenceScore * 100).toInt()}%",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Result Text
-                Text(
-                    text = "Result: $predictionResult",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    ),
-                    textAlign = TextAlign.Center,
-                    color = if (predictionResult == "Normal") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Confidence Score
-                Text(
-                    text = "Confidence: ${(confidenceScore * 100).toInt()}%",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
                 
                 // Additional Info
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "Analysis Summary:",
+                            text = "Analysis Summary",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
@@ -160,10 +173,11 @@ fun ResultView(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = if (predictionResult == "Normal") {
-                                "No signs of cataract detected. Your eye appears to be healthy. Continue regular eye checkups."
-                            } else {
-                                "Potential signs detected. Please consult with an ophthalmologist for professional evaluation."
+                            text = when {
+                                predictionResult == "Normal" -> stringResource(R.string.summary_normal)
+                                predictionResult == "Unknown" -> stringResource(R.string.summary_unknown)
+                                predictionResult.startsWith("Error") -> stringResource(R.string.summary_error)
+                                else -> stringResource(R.string.summary_cataract)
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -173,70 +187,71 @@ fun ResultView(
             }
         }
         
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.weight(1f))
         
         // Action Buttons
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Try Another Image Button
+            // Try Another Image Button (Primary Action)
 //            Button(
 //                onClick = onTryAnotherImage,
-//                modifier = Modifier.fillMaxWidth(),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(56.dp),
 //                colors = ButtonDefaults.buttonColors(
-//                    containerColor = Color(0xFF4CAF50)
+//                    containerColor = MaterialTheme.colorScheme.primary,
+//                    contentColor = MaterialTheme.colorScheme.onPrimary
 //                ),
-//                shape = RoundedCornerShape(12.dp)
+//                shape = RoundedCornerShape(16.dp),
+//                elevation = ButtonDefaults.buttonElevation(
+//                    defaultElevation = 4.dp,
+//                    pressedElevation = 8.dp
+//                )
 //            ) {
 //                Icon(
-//                    imageVector = Icons.Default.Refresh,
+//                    imageVector = Icons.Default.Image,
 //                    contentDescription = "Try Another Image",
 //                    modifier = Modifier.size(20.dp)
 //                )
 //                Spacer(modifier = Modifier.width(8.dp))
-//                Text("Try Another Image")
-//            }
-            
-            // Back Button
-//            Button(
-//                onClick = onBackToHome,
-//                modifier = Modifier.fillMaxWidth(),
-//                colors = ButtonDefaults.buttonColors(
-//                    containerColor = MaterialTheme.colorScheme.surface,
-//                    contentColor = MaterialTheme.colorScheme.onSurface
-//                ),
-//                shape = RoundedCornerShape(12.dp)
-//            ) {
-//                Icon(
-//                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                    contentDescription = "Back",
-//                    modifier = Modifier.size(20.dp)
+//                Text(
+//                    "Try Another Image",
+//                    style = MaterialTheme.typography.titleMedium.copy(
+//                        fontWeight = FontWeight.Bold
+//                    )
 //                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text("Back")
-//            }
+            }
             
-            // Back to Home Button
+            // Back to Home Button (Secondary Action)
             Button(
-                onClick = onTryAnotherImage,
-                modifier = Modifier.fillMaxWidth(),
+                onClick = onBackToHome,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
-                    imageVector =Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Home",
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back to Home",
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Back")
+                Text(
+                    "Back to Home",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
             }
         }
     }
-}
+//}
 
 @Preview(showBackground = true)
 @Composable

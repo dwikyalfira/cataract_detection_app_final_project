@@ -87,8 +87,8 @@
     <string name="change_password">Change Password</string>
     <string name="current_password">Current Password</string>
     <string name="new_password">New Password</string>
-    <string name="changing">Changing...</string>
-    <string name="deleting">Deleting...</string>
+    <string name="changing">Changing…</string>
+    <string name="deleting">Deleting…</string>
     <string name="account_deleted_successfully">Account deleted successfully</string>
     
     <!-- History -->
@@ -141,7 +141,7 @@
     <string name="check_instructions">1. Upload or capture an image of an eye\n2. The AI will analyze the image\n3. Get instant results about cataract detection</string>
     <string name="pick_image">Pick Image</string>
     <string name="capture_image">Capture Image</string>
-    <string name="analyzing_image">Analyzing image...</string>
+    <string name="analyzing_image">Analyzing image…</string>
     <string name="tips_for_better_results">💡 Tips for better results:</string>
     <string name="check_tips">• Ensure good lighting\n• Keep the eye centered in the frame\n• Avoid blurry images\n• Use high resolution images</string>
     <string name="no_image_selected">No image selected</string>
@@ -155,6 +155,7 @@
     <string name="pick_different_image">Pick Different Image</string>
     <string name="image_selected">Image selected successfully</string>
     <string name="confirm_image_selection">Confirm your image selection</string>
+    <string name="adjust_image">Adjust Image</string>
     
     <!-- CNN Information -->
     <string name="cnn_technology">CNN Technology</string>
@@ -194,4 +195,21 @@
     <string name="error_logout_failed">Logout failed</string>
     <string name="success_password_reset_sent">Password reset email sent</string>
     <string name="success_account_created">Account created successfully! Please login to use the app.</string>
+    
+    <!-- Result Strings -->
+    <string name="result_normal">Normal</string>
+    <string name="result_cataract">Cataract</string>
+    <string name="result_unknown">Unknown</string>
+    <string name="result_error">Error</string>
+    
+    <!-- Result Summaries -->
+    <string name="summary_normal">No signs of cataract detected. Your eye appears to be healthy. Continue regular eye checkups.</string>
+    <string name="summary_cataract">Potential signs detected. Please consult with an ophthalmologist for professional evaluation.</string>
+    <string name="summary_unknown">The image could not be recognized as an eye or the quality is too low. Please try again with a clear, close-up photo of an eye.</string>
+    <string name="summary_error">An error occurred during analysis. Please check the error message above.</string>
+    <!-- ROI View -->
+    <string name="set_image_area_of_interest">Set Image Area of Interest</string>
+    <string name="roi_instruction">Mark the pupil by dragging the image and adjusting its size to fit the ellipse.</string>
+    <string name="current_scale">Current Scale: %.1fx</string>
+    <string name="start_analysis">Start Analysis</string>
 </resources>

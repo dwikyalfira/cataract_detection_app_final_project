@@ -8,6 +8,9 @@ import com.dicoding.cataract_detection_app_final_project.data.AnalysisHistory
 import com.dicoding.cataract_detection_app_final_project.model.CataractModel
 import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
 import com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager
+import com.dicoding.cataract_detection_app_final_project.utils.ImageCropper
+import com.dicoding.cataract_detection_app_final_project.view.ROIRect
+import com.dicoding.cataract_detection_app_final_project.view.ImageAdjustments
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -21,6 +24,7 @@ class MainPresenter {
     private var cataractModel: CataractModel? = null
     private var historyRepository: HistoryRepository? = null
     private var imageStorageManager: ImageStorageManager? = null
+    private var imageCropper: ImageCropper? = null
     private var currentUserId: String = ""
     private var context: Context? = null
     
@@ -51,11 +55,19 @@ class MainPresenter {
     private val _isNavigating = mutableStateOf(false)
     val isNavigating: State<Boolean> = _isNavigating
     
-    // Navigation callback
+    private val _showROIView = mutableStateOf(false)
+    val showROIView: State<Boolean> = _showROIView
+    
+    // Navigation callbacks
     private var onNavigateToResult: (() -> Unit)? = null
+    private var onNavigateToROI: (() -> Unit)? = null
     
     fun setNavigationCallback(onNavigateToResult: () -> Unit) {
         this.onNavigateToResult = onNavigateToResult
+    }
+    
+    fun setROINavigationCallback(onNavigateToROI: () -> Unit) {
+        this.onNavigateToROI = onNavigateToROI
     }
     
     /**
@@ -65,6 +77,7 @@ class MainPresenter {
         this.context = context
         this.historyRepository = HistoryRepository(context)
         this.imageStorageManager = ImageStorageManager(context)
+        this.imageCropper = ImageCropper(context)
         this.currentUserId = userId
         this.cataractModel = CataractModel(context)
         android.util.Log.d("MainPresenter", "initializeHistory - Model ready after init: ${cataractModel?.isModelReady()}")
@@ -109,14 +122,83 @@ class MainPresenter {
     }
     
     /**
+     * Show ROI adjustment view
+     */
+    fun onAdjustROI() {
+        if (_selectedImageUri.value != null) {
+            onNavigateToROI?.invoke()
+        }
+    }
+    
+    /**
+     * Handle ROI confirmation and proceed with cropped image
+     */
+    fun onROIConfirmed(roiRect: ROIRect, adjustments: ImageAdjustments) {
+        _showROIView.value = false
+        val imageUri = _selectedImageUri.value
+        if (imageUri != null && imageCropper != null) {
+            _isLoading.value = true
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    android.util.Log.d("MainPresenter", "Cropping image with ROI: $roiRect, adjustments: $adjustments")
+                    val originalUri = Uri.parse(imageUri)
+                    val croppedUri = imageCropper!!.cropImage(originalUri, roiRect, adjustments)
+                    
+                    if (croppedUri != null) {
+                        android.util.Log.d("MainPresenter", "Image cropped successfully, proceeding with analysis")
+                        // Update the selected image URI to the cropped version
+                        _selectedImageUri.value = croppedUri.toString()
+                        // Proceed with analysis using the cropped image
+                        proceedWithAnalysis(croppedUri.toString())
+                    } else {
+                        android.util.Log.e("MainPresenter", "Failed to crop image")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            _isLoading.value = false
+                            // Fallback to original image
+                            proceedWithAnalysis(imageUri)
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainPresenter", "Error cropping image: ${e.message}", e)
+                    CoroutineScope(Dispatchers.Main).launch {
+                        _isLoading.value = false
+                        // Fallback to original image
+                        proceedWithAnalysis(imageUri)
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Cancel ROI adjustment
+     */
+    fun onCancelROI() {
+        // Navigation back will be handled by the UI
+    }
+    
+    /**
      * Proceed with the selected image for processing
      */
     fun onProceedWithImage() {
         val imageUri = _selectedImageUri.value
-        android.util.Log.d("MainPresenter", "onProceedWithImage called with URI: $imageUri")
+        if (imageUri != null) {
+            // Navigate to ROI adjustment instead of direct analysis
+            onAdjustROI()
+        } else {
+            android.util.Log.e("MainPresenter", "Cannot proceed - no image selected")
+        }
+    }
+    
+    /**
+     * Internal method to proceed with analysis
+     */
+    private fun proceedWithAnalysis(imageUri: String) {
+        android.util.Log.d("MainPresenter", "proceedWithAnalysis called with URI: $imageUri")
         android.util.Log.d("MainPresenter", "Model ready: ${cataractModel?.isModelReady()}")
         
-        if (imageUri != null && cataractModel != null) {
+        if (cataractModel != null) {
             _isLoading.value = true
             // Store the scanned image URI for display in results
             _scannedImageUri.value = imageUri
@@ -171,7 +253,8 @@ class MainPresenter {
                 }
             }
         } else {
-            android.util.Log.e("MainPresenter", "Cannot proceed - imageUri: $imageUri, model: $cataractModel")
+            android.util.Log.e("MainPresenter", "Cannot proceed - model not available")
+            _isLoading.value = false
         }
     }
     
@@ -237,6 +320,8 @@ class MainPresenter {
         cataractModel?.close()
         cataractModel = null
         historyRepository = null
+        imageCropper?.cleanupTempFiles()
+        imageCropper = null
         context = null
     }
 }

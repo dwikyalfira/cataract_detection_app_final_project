@@ -156,6 +156,7 @@
     <string name="pick_different_image">Pilih Gambar Lain</string>
     <string name="image_selected">Gambar berhasil dipilih</string>
     <string name="confirm_image_selection">Konfirmasi pilihan gambar Anda</string>
+    <string name="adjust_image">Atur Gambar</string>
 
     <!-- CNN Information -->
     <string name="cnn_technology">Teknologi CNN</string>
@@ -195,4 +196,21 @@
     <string name="error_logout_failed">Gagal keluar</string>
     <string name="success_password_reset_sent">Email reset kata sandi telah dikirim</string>
     <string name="success_account_created">Akun berhasil dibuat! Silakan masuk untuk menggunakan aplikasi.</string>
+    
+    <!-- Result Strings -->
+    <string name="result_normal">Normal</string>
+    <string name="result_cataract">Katarak</string>
+    <string name="result_unknown">Tidak Diketahui</string>
+    <string name="result_error">Error</string>
+    
+    <!-- Result Summaries -->
+    <string name="summary_normal">Tidak ada tanda-tanda katarak terdeteksi. Mata Anda tampak sehat. Lanjutkan pemeriksaan mata rutin.</string>
+    <string name="summary_cataract">Tanda-tanda potensial terdeteksi. Silakan konsultasikan dengan dokter mata untuk evaluasi profesional.</string>
+    <string name="summary_unknown">Gambar tidak dapat dikenali sebagai mata atau kualitasnya terlalu rendah. Silakan coba lagi dengan foto mata yang jelas dan close-up.</string>
+    <string name="summary_error">Terjadi kesalahan selama analisis. Silakan periksa pesan kesalahan di atas.</string>
+    <!-- ROI View -->
+    <string name="set_image_area_of_interest">Atur Area Fokus Gambar</string>
+    <string name="roi_instruction">Tandai pupil dengan menyeret gambar dan menyesuaikan ukurannya agar pas dengan elips.</string>
+    <string name="current_scale">Skala Saat Ini: %.1fx</string>
+    <string name="start_analysis">Mulai Analisis</string>
 </resources>

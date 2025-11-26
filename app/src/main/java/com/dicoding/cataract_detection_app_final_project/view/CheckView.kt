@@ -35,7 +35,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -45,7 +44,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
 import com.dicoding.cataract_detection_app_final_project.R
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.material.icons.filled.Crop
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +59,25 @@ fun CheckView(
     onProceedWithImage: () -> Unit = {},
     onRetakeImage: () -> Unit = {},
     onPickDifferentImage: () -> Unit = {},
+    onImageCropped: (android.net.Uri) -> Unit = {},
     selectedImageUri: String? = null,
     isLoading: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    val context = LocalContext.current
+    val imageCropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
+        if (result.isSuccessful) {
+            // Use the returned uri.
+            val uriContent = result.uriContent
+            if (uriContent != null) {
+                onImageCropped(uriContent)
+            }
+        } else {
+            // An error occurred.
+            val exception = result.error
+            android.util.Log.e("CheckView", "Image cropping failed: ${exception?.message}")
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -334,6 +353,53 @@ fun CheckView(
                                         )
                                     )
                                 }
+                            }
+                        }
+                        
+                        // Adjust/Crop button
+                        Button(
+                            onClick = {
+                                if (selectedImageUri != null) {
+                                    val options = CropImageContractOptions(
+                                        uri = android.net.Uri.parse(selectedImageUri),
+                                        cropImageOptions = CropImageOptions(
+                                            imageSourceIncludeGallery = false,
+                                            imageSourceIncludeCamera = false
+                                        )
+                                    )
+                                    imageCropLauncher.launch(options)
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            enabled = !isLoading,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 2.dp,
+                                pressedElevation = 4.dp
+                            )
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Crop,
+                                    contentDescription = "Adjust Image",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    stringResource(R.string.adjust_image),
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                )
                             }
                         }
                     }
