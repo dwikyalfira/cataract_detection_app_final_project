@@ -1,0 +1,108 @@
+Starting a Gradle Daemon, 1 busy and 3 stopped Daemons could not be reused, use --status for details
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:mergeDebugMlModels UP-TO-DATE
+> Task :app:generateDebugMlModelClass UP-TO-DATE
+> Task :app:checkDebugAarMetadata
+> Task :app:processDebugNavigationResources
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:parseDebugLocalResources
+
+> Task :app:processDebugMainManifest
+[com.google.ai.edge.litert:litert-support:1.0.1] C:\Users\dwiky\.gradle\caches\9.0-milestone-1\transforms\adcf973f2a1810853ccabadd47f1742d\transformed\litert-support-1.0.1\AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite.support' is used in multiple modules and/or libraries: com.google.ai.edge.litert:litert-support:1.0.1, com.google.ai.edge.litert:litert-support-api:1.0.1. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+
+> Task :app:mergeDebugResources
+> Task :app:processDebugManifest
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+> Task :app:mergeExtDexDebug
+> Task :app:compileDebugKotlin
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:579:48 Argument type mismatch: actual type is 'kotlin.Unit', but 'kotlin.Function0<kotlin.Unit>' was expected.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:586:25 Unresolved reference 'onPickDifferentImage'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:593:26 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:594:25 Unresolved reference 'onImageCropped'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:594:44 An explicit type is required on a value parameter.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:596:26 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:597:25 Unresolved reference 'selectedImageUri'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:597:76 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:598:25 Unresolved reference 'isLoading'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:598:62 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:599:25 'val' cannot be reassigned.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:600:21 Syntax error: Expecting an element.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:602:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun NavGraphBuilder.composable(route: String, arguments: List<NamedNavArgument> = ..., deepLinks: List<NavDeepLink> = ..., enterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., exitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., popEnterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., popExitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., sizeTransform: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = ..., content: @Composable() ComposableFunction2<AnimatedContentScope, NavBackStackEntry, Unit>): Unit
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:602:28 Unresolved reference 'invoke'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:603:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:614:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun NavGraphBuilder.composable(route: String, arguments: List<NamedNavArgument> = ..., deepLinks: List<NavDeepLink> = ..., enterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., exitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., popEnterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., popExitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., sizeTransform: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = ..., content: @Composable() ComposableFunction2<AnimatedContentScope, NavBackStackEntry, Unit>): Unit
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:614:28 Expression 'roi_adjustment' of type 'kotlin.String' cannot be invoked as a function. Function 'invoke()' is not found.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:617:25 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:629:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun NavGraphBuilder.composable(route: String, arguments: List<NamedNavArgument> = ..., deepLinks: List<NavDeepLink> = ..., enterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., exitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., popEnterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., popExitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., sizeTransform: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = ..., content: @Composable() ComposableFunction2<AnimatedContentScope, NavBackStackEntry, Unit>): Unit
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:629:28 Expression 'history' of type 'kotlin.String' cannot be invoked as a function. Function 'invoke()' is not found.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:630:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:639:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun NavGraphBuilder.composable(route: String, arguments: List<NamedNavArgument> = ..., deepLinks: List<NavDeepLink> = ..., enterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., exitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., popEnterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., popExitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., sizeTransform: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = ..., content: @Composable() ComposableFunction2<AnimatedContentScope, NavBackStackEntry, Unit>): Unit
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:639:28 Expression 'history_result' of type 'kotlin.String' cannot be invoked as a function. Function 'invoke()' is not found.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:641:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:646:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun NavGraphBuilder.composable(route: String, arguments: List<NamedNavArgument> = ..., deepLinks: List<NavDeepLink> = ..., enterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., exitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., popEnterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., popExitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., sizeTransform: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = ..., content: @Composable() ComposableFunction2<AnimatedContentScope, NavBackStackEntry, Unit>): Unit
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:646:28 Expression 'result' of type 'kotlin.String' cannot be invoked as a function. Function 'invoke()' is not found.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:647:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:672:17 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+fun NavGraphBuilder.composable(route: String, arguments: List<NamedNavArgument> = ..., deepLinks: List<NavDeepLink> = ..., enterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., exitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., popEnterTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = ..., popExitTransition: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = ..., sizeTransform: @JvmSuppressWildcards() (AnimatedContentTransitionScope<NavBackStackEntry>.() -> SizeTransform?)? = ..., content: @Composable() ComposableFunction2<AnimatedContentScope, NavBackStackEntry, Unit>): Unit
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:672:28 Expression 'cnn_explanation' of type 'kotlin.String' cannot be invoked as a function. Function 'invoke()' is not found.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:673:21 @Composable invocations can only happen from the context of a @Composable function
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:676:18 Syntax error: Expecting ')'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/MainActivity.kt:685:2 Syntax error: Expecting '}'.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/view/CheckView.kt:46:21 Conflicting import: imported name 'ImageRequest' is ambiguous.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/view/CheckView.kt:48:21 Conflicting import: imported name 'ImageRequest' is ambiguous.
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/view/CheckView.kt:62:5 Conflicting declarations:
+onRetakeImage: () -> Unit = ...
+onRetakeImage: () -> Unit = ...
+e: file:///C:/Users/dwiky/AndroidStudioProjects/cataract_detection_app_final_project/app/src/main/java/com/dicoding/cataract_detection_app_final_project/view/CheckView.kt:63:5 Conflicting declarations:
+onRetakeImage: () -> Unit = ...
+onRetakeImage: () -> Unit = ...
+
+> Task :app:compileDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 20s
+33 actionable tasks: 12 executed, 21 up-to-date
