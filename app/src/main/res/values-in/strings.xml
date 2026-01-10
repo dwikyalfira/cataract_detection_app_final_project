@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Detektor Katarak</string>
+    <string name="app_name">KataMata</string>
+    <string name="app_tagline">Periksa mata Anda</string>
 
     <!-- Common -->
     <string name="back">Kembali</string>
@@ -68,12 +69,18 @@
 
     <!-- Forgot Password -->
     <string name="reset_password">Reset Kata Sandi</string>
-    <string name="reset_password_description">Masukkan alamat email Anda dan kami akan mengirimkan tautan untuk mereset kata sandi Anda.</string>
+    <string name="reset_password_description">Masukkan alamat email Anda untuk menerima kode OTP guna mereset kata sandi Anda.</string>
     <string name="send_reset_link">Kirim Tautan Reset</string>
     <string name="back_to_login">Kembali ke Login</string>
     <string name="reset_link_sent">Tautan reset telah dikirim ke email Anda</string>
     <string name="reset_link_failed">Gagal mengirim tautan reset. Silakan coba lagi.</string>
     <string name="check_email_instructions">Silakan periksa email Anda dan ikuti instruksi untuk mereset kata sandi Anda.</string>
+    <string name="enter_otp_instruction">Masukkan OTP dan kata sandi baru</string>
+    <string name="otp_code">Kode OTP</string>
+    <string name="otp_hint">Masukkan 6 digit OTP</string>
+    <string name="new_password_label">Kata Sandi Baru</string>
+    <string name="reset_password_button">Reset Kata Sandi</string>
+    <string name="remember_password">Ingat kata sandi Anda? </string>
 
     <!-- Registration -->
     <string name="full_name">Nama Lengkap</string>
@@ -139,7 +146,7 @@
 
     <!-- Check Page -->
     <string name="how_to_use">Cara menggunakan:</string>
-    <string name="check_instructions">1. Unggah atau ambil foto mata\n2. AI akan menganalisis gambar\n3. Dapatkan hasil instan tentang deteksi katarak</string>
+    <string name="check_instructions">1. Ambil foto atau unggah gambar mata\n2. Sesuaikan atau potong gambar jika perlu\n3. Ketuk \'Mulai Analisis\' untuk dapatkan hasil</string>
     <string name="pick_image">Pilih Gambar</string>
     <string name="capture_image">Ambil Foto</string>
     <string name="analyzing_image">Menganalisis gambar...</string>
@@ -213,4 +220,6 @@
     <string name="roi_instruction">Tandai pupil dengan menyeret gambar dan menyesuaikan ukurannya agar pas dengan elips.</string>
     <string name="current_scale">Skala Saat Ini: %.1fx</string>
     <string name="start_analysis">Mulai Analisis</string>
+    <string name="back_to_home">Kembali ke Beranda</string>
+    <string name="analysis_summary">Hasil Analisis</string>
 </resources>

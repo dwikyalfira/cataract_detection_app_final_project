@@ -19,9 +19,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -29,6 +32,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +54,8 @@ import com.dicoding.cataract_detection_app_final_project.data.AnalysisHistory
 @Composable
 fun HistoryResultView(
     history: AnalysisHistory?,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {}
 ) {
     if (history == null) {
         // Fallback UI when history is null
@@ -72,8 +80,14 @@ fun HistoryResultView(
         return
     }
     
-    val resultColor = if (history.isHealthy()) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
+    val statusColor = history.getResultColor()
+    
+    val cardContainerColor = if (history.isHealthy()) {
         MaterialTheme.colorScheme.primaryContainer
+    } else if (history.predictionResult.equals("Unknown", ignoreCase = true)) {
+        MaterialTheme.colorScheme.surfaceVariant // Or a specific yellow container if available
     } else {
         MaterialTheme.colorScheme.errorContainer
     }
@@ -102,11 +116,11 @@ fun HistoryResultView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = history.predictionResult,
+                text = history.getLocalizedResult(),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = MaterialTheme.colorScheme.onSurface,
+                color = statusColor,
                 textAlign = TextAlign.Center
             )
             
@@ -145,7 +159,7 @@ fun HistoryResultView(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = resultColor
+                    containerColor = cardContainerColor
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
@@ -259,6 +273,69 @@ fun HistoryResultView(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     )
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Delete Button
+            Button(
+                onClick = { showDeleteDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.delete),
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.delete),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
+            
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.delete_analysis),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(R.string.delete_analysis_message),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showDeleteDialog = false
+                                onDeleteClick()
+                            },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text(stringResource(R.string.delete))
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(onClick = { showDeleteDialog = false }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
                 )
             }
             

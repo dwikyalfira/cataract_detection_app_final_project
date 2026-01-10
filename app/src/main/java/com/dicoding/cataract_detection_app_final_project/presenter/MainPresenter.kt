@@ -61,6 +61,7 @@ class MainPresenter {
     // Navigation callbacks
     private var onNavigateToResult: (() -> Unit)? = null
     private var onNavigateToROI: (() -> Unit)? = null
+    private var onAnalysisComplete: ((Boolean) -> Unit)? = null
     
     fun setNavigationCallback(onNavigateToResult: () -> Unit) {
         this.onNavigateToResult = onNavigateToResult
@@ -68,6 +69,10 @@ class MainPresenter {
     
     fun setROINavigationCallback(onNavigateToROI: () -> Unit) {
         this.onNavigateToROI = onNavigateToROI
+    }
+
+    fun setAnalysisCompleteCallback(callback: (Boolean) -> Unit) {
+        this.onAnalysisComplete = callback
     }
     
     /**
@@ -119,6 +124,8 @@ class MainPresenter {
      */
     fun onImageSelected(imageUri: String) {
         _selectedImageUri.value = imageUri
+        // Automatically navigate to ROI adjustment
+        onAdjustROI()
     }
     
     /**
@@ -237,6 +244,13 @@ class MainPresenter {
                                 userId = currentUserId
                             )
                             repo.saveAnalysisHistory(history)
+                        }
+                        
+                        // Notify analysis complete (Normal = healthy, Cataract = not healthy)
+                        // Only update stats for valid predictions
+                        if (result.equals("Normal", ignoreCase = true) || result.equals("Cataract", ignoreCase = true)) {
+                            val isHealthy = result.equals("Normal", ignoreCase = true)
+                            onAnalysisComplete?.invoke(isHealthy)
                         }
                         
                         _isLoading.value = false

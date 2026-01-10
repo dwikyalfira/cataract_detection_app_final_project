@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,13 +86,12 @@ fun CheckView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Instructions Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
@@ -101,7 +99,7 @@ fun CheckView(
                 modifier = Modifier.padding(20.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.how_to_use),
+                    text = "📝 ${stringResource(R.string.how_to_use)}",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -117,17 +115,13 @@ fun CheckView(
         }
         
         // Image Preview Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(if (selectedImageUri != null) 340.dp else 240.dp)
                 .padding(vertical = 16.dp),
             shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp,
-                pressedElevation = 10.dp
-            ),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
@@ -247,13 +241,12 @@ fun CheckView(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Image selected confirmation
-                        Card(
+                        androidx.compose.material3.ElevatedCard(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
+                            colors = CardDefaults.elevatedCardColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            )
                         ) {
                             Row(
                                 modifier = Modifier.padding(16.dp),
@@ -490,13 +483,12 @@ fun CheckView(
         
         
         // Tips Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
             shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer
             )
         ) {
@@ -504,7 +496,7 @@ fun CheckView(
                 modifier = Modifier.padding(20.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.tips_for_better_results),
+                    text = "💡 ${stringResource(R.string.tips_for_better_results)}",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),

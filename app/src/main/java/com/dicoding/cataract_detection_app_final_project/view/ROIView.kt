@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Button
@@ -28,11 +26,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -119,310 +117,262 @@ fun ROIView(
     val minScale = 0.5f
     val maxScale = 3.0f
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        stringResource(R.string.set_image_area_of_interest),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onCancel) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = stringResource(R.string.back),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Instructions
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.roi_instruction),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.current_scale, imageScale),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Image display area
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clipToBounds()
+                .background(Color.Black)
+                .onGloballyPositioned { coordinates ->
+                    containerSize = coordinates.size.toSize()
+                }
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        imageScale = (imageScale * zoom).coerceIn(minScale, maxScale)
+                        val newOffset = imageOffset + pan
+                        imageOffset = newOffset
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                scrollBehavior = scrollBehavior
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.surface
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.surface),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            contentAlignment = Alignment.Center
         ) {
-            // Instructions
-            Card(
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUri)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(R.string.image_label),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.roi_instruction),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.current_scale, imageScale),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .offset(imageOffset.x.dp, imageOffset.y.dp)
+                    .scale(imageScale),
+                contentScale = ContentScale.Fit,
+                onSuccess = { success ->
+                    imageSize = Size(
+                        success.painter.intrinsicSize.width,
+                        success.painter.intrinsicSize.height
                     )
                 }
-            }
+            )
 
-            // ... (Image display area remains same)
-            Box(
+            // Fixed Ellipse Overlay
+            Canvas(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .background(Color.Black)
-                    .onGloballyPositioned { coordinates ->
-                        containerSize = coordinates.size.toSize()
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        compositingStrategy = CompositingStrategy.Offscreen
                     }
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            imageScale = (imageScale * zoom).coerceIn(minScale, maxScale)
-                            val newOffset = imageOffset + pan
-                            imageOffset = newOffset
-                        }
-                    },
-                contentAlignment = Alignment.Center
             ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(imageUri)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = stringResource(R.string.image_label),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black)
-                        .offset(imageOffset.x.dp, imageOffset.y.dp)
-                        .scale(imageScale),
-                    contentScale = ContentScale.Fit,
-                    onSuccess = { success ->
-                        imageSize = Size(
-                            success.painter.intrinsicSize.width,
-                            success.painter.intrinsicSize.height
-                        )
-                    }
+                val canvasWidth = size.width
+                val canvasHeight = size.height
+
+                // Define the fixed ellipse in the center of the canvas
+                val ellipseWidth = canvasWidth * 0.6f
+                val ellipseHeight = canvasHeight * 0.6f
+                val ellipseRect = Rect(
+                    left = (canvasWidth - ellipseWidth) / 2f,
+                    top = (canvasHeight - ellipseHeight) / 2f,
+                    right = (canvasWidth + ellipseWidth) / 2f,
+                    bottom = (canvasHeight + ellipseHeight) / 2f
                 )
 
-                // Fixed Ellipse Overlay
-                Canvas(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val canvasWidth = size.width
-                    val canvasHeight = size.height
+                // Draw semi-transparent overlay outside the ellipse
+                drawRect(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    size = size
+                )
+                drawOval(
+                    color = Color.Transparent,
+                    topLeft = ellipseRect.topLeft,
+                    size = ellipseRect.size,
+                    blendMode = androidx.compose.ui.graphics.BlendMode.Clear
+                )
 
-                    // Define the fixed ellipse in the center of the canvas
-                    val ellipseWidth = canvasWidth * 0.6f
-                    val ellipseHeight = canvasHeight * 0.6f
-                    val ellipseRect = Rect(
-                        left = (canvasWidth - ellipseWidth) / 2f,
-                        top = (canvasHeight - ellipseHeight) / 2f,
-                        right = (canvasWidth + ellipseWidth) / 2f,
-                        bottom = (canvasHeight + ellipseHeight) / 2f
+                // Draw ellipse border with dashed line
+                drawOval(
+                    color = Color.Cyan,
+                    topLeft = ellipseRect.topLeft,
+                    size = ellipseRect.size,
+                    style = Stroke(
+                        width = 4.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                     )
-
-                    // Draw semi-transparent overlay outside the ellipse
-                    drawRect(
-                        color = Color.Black.copy(alpha = 0.6f),
-                        size = size
-                    )
-                    drawOval(
-                        color = Color.Transparent,
-                        topLeft = ellipseRect.topLeft,
-                        size = ellipseRect.size,
-                        blendMode = androidx.compose.ui.graphics.BlendMode.Clear
-                    )
-
-                    // Draw ellipse border with dashed line
-                    drawOval(
-                        color = Color.Cyan,
-                        topLeft = ellipseRect.topLeft,
-                        size = ellipseRect.size,
-                        style = Stroke(
-                            width = 4.dp.toPx(),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                        )
-                    )
-                }
+                )
             }
+        }
 
-            // Zoom controls
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(
-                        onClick = { imageScale = max(minScale, imageScale - 0.1f) },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.ZoomOut, 
-                            contentDescription = "Zoom Out",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Slider(
-                        value = imageScale,
-                        onValueChange = { imageScale = it },
-                        valueRange = minScale..maxScale,
-                        modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-                    )
-                    IconButton(
-                        onClick = { imageScale = min(maxScale, imageScale + 0.1f) },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.ZoomIn, 
-                            contentDescription = "Zoom In",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-
-            // Action Buttons
+        // Zoom controls
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(
-                    onClick = onCancel,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                IconButton(
+                    onClick = { imageScale = max(minScale, imageScale - 0.1f) },
+                    modifier = Modifier.size(40.dp)
                 ) {
-                    Text(
-                        stringResource(R.string.back), 
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        )
+                    Icon(
+                        Icons.Filled.ZoomOut, 
+                        contentDescription = "Zoom Out",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                
-                Button(
-                    onClick = {
-                        if (imageSize != Size.Zero && containerSize != Size.Zero) {
-                            // ... (ROI calculation logic remains same)
-                            // 1. Define Ellipse Rect in Screen Coordinates (centered in container)
-                            val ellipseWidth = containerSize.width * 0.6f
-                            val ellipseHeight = containerSize.height * 0.6f
-                            val ellipseLeft = (containerSize.width - ellipseWidth) / 2f
-                            val ellipseTop = (containerSize.height - ellipseHeight) / 2f
-                            val ellipseRect = Rect(
-                                left = ellipseLeft,
-                                top = ellipseTop,
-                                right = ellipseLeft + ellipseWidth,
-                                bottom = ellipseTop + ellipseHeight
-                            )
-
-                            // 2. Calculate ScaleToFit factor (how the image is fitted in the container initially)
-                            val scaleToFit = min(
-                                containerSize.width / imageSize.width,
-                                containerSize.height / imageSize.height
-                            )
-                            
-                            // 3. Calculate Rendered Image Bounds (before user zoom/pan)
-                            val renderedImageWidth = imageSize.width * scaleToFit
-                            val renderedImageHeight = imageSize.height * scaleToFit
-                            val renderedImageLeft = (containerSize.width - renderedImageWidth) / 2f
-                            val renderedImageTop = (containerSize.height - renderedImageHeight) / 2f
-
-                            // 4. Map Ellipse Corners to Image Coordinates
-                            val centerX = containerSize.width / 2f
-                            val centerY = containerSize.height / 2f
-                            
-                            fun mapScreenToNormalizedImage(screenX: Float, screenY: Float): Offset {
-                                val localX = (screenX - imageOffset.x - centerX) / imageScale + centerX
-                                val localY = (screenY - imageOffset.y - centerY) / imageScale + centerY
-                                
-                                val imagePixelX = (localX - renderedImageLeft) / scaleToFit
-                                val imagePixelY = (localY - renderedImageTop) / scaleToFit
-                                
-                                return Offset(
-                                    imagePixelX / imageSize.width,
-                                    imagePixelY / imageSize.height
-                                )
-                            }
-
-                            val topLeft = mapScreenToNormalizedImage(ellipseRect.left, ellipseRect.top)
-                            val bottomRight = mapScreenToNormalizedImage(ellipseRect.right, ellipseRect.bottom)
-
-                            val calculatedRoi = ROIRect(
-                                left = topLeft.x,
-                                top = topLeft.y,
-                                right = bottomRight.x,
-                                bottom = bottomRight.y
-                            )
-                            
-                            val identityAdjustments = ImageAdjustments(scale = 1.0f, offsetX = 0f, offsetY = 0f)
-
-                            onROIConfirmed(calculatedRoi, identityAdjustments)
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                Slider(
+                    value = imageScale,
+                    onValueChange = { imageScale = it },
+                    valueRange = minScale..maxScale,
+                    modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+                )
+                IconButton(
+                    onClick = { imageScale = min(maxScale, imageScale + 0.1f) },
+                    modifier = Modifier.size(40.dp)
                 ) {
-                    Text(
-                        stringResource(R.string.start_analysis), 
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        )
+                    Icon(
+                        Icons.Filled.ZoomIn, 
+                        contentDescription = "Zoom In",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         }
+
+        // Action Buttons
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = {
+                    if (imageSize != Size.Zero && containerSize != Size.Zero) {
+                        // 1. Define Ellipse Rect in Screen Coordinates (centered in container)
+                        val ellipseWidth = containerSize.width * 0.6f
+                        val ellipseHeight = containerSize.height * 0.6f
+                        val ellipseLeft = (containerSize.width - ellipseWidth) / 2f
+                        val ellipseTop = (containerSize.height - ellipseHeight) / 2f
+                        val ellipseRect = Rect(
+                            left = ellipseLeft,
+                            top = ellipseTop,
+                            right = ellipseLeft + ellipseWidth,
+                            bottom = ellipseTop + ellipseHeight
+                        )
+
+                        // 2. Calculate ScaleToFit factor (how the image is fitted in the container initially)
+                        val scaleToFit = min(
+                            containerSize.width / imageSize.width,
+                            containerSize.height / imageSize.height
+                        )
+                        
+                        // 3. Calculate Rendered Image Bounds (before user zoom/pan)
+                        val renderedImageWidth = imageSize.width * scaleToFit
+                        val renderedImageHeight = imageSize.height * scaleToFit
+                        val renderedImageLeft = (containerSize.width - renderedImageWidth) / 2f
+                        val renderedImageTop = (containerSize.height - renderedImageHeight) / 2f
+
+                        // 4. Map Ellipse Corners to Image Coordinates
+                        val centerX = containerSize.width / 2f
+                        val centerY = containerSize.height / 2f
+                        
+                        fun mapScreenToNormalizedImage(screenX: Float, screenY: Float): Offset {
+                            val localX = (screenX - imageOffset.x - centerX) / imageScale + centerX
+                            val localY = (screenY - imageOffset.y - centerY) / imageScale + centerY
+                            
+                            val imagePixelX = (localX - renderedImageLeft) / scaleToFit
+                            val imagePixelY = (localY - renderedImageTop) / scaleToFit
+                            
+                            return Offset(
+                                imagePixelX / imageSize.width,
+                                imagePixelY / imageSize.height
+                            )
+                        }
+
+                        val topLeft = mapScreenToNormalizedImage(ellipseRect.left, ellipseRect.top)
+                        val bottomRight = mapScreenToNormalizedImage(ellipseRect.right, ellipseRect.bottom)
+
+                        val calculatedRoi = ROIRect(
+                            left = topLeft.x,
+                            top = topLeft.y,
+                            right = bottomRight.x,
+                            bottom = bottomRight.y
+                        )
+                        
+                        val identityAdjustments = ImageAdjustments(scale = 1.0f, offsetX = 0f, offsetY = 0f)
+
+                        onROIConfirmed(calculatedRoi, identityAdjustments)
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.start_analysis), 
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+        }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)

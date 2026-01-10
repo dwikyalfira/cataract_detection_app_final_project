@@ -33,6 +33,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dicoding.cataract_detection_app_final_project.R
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.dicoding.cataract_detection_app_final_project.view.components.FullScreenImageDialog
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.clickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +55,15 @@ fun HomeView(
     isLoading: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    var fullScreenImageRes by remember { mutableStateOf<Int?>(null) }
+
+    if (fullScreenImageRes != null) {
+        FullScreenImageDialog(
+            imageResId = fullScreenImageRes!!,
+            onDismissRequest = { fullScreenImageRes = null }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,13 +73,12 @@ fun HomeView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Eye Health Overview Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )
         ) {
@@ -84,14 +102,13 @@ fun HomeView(
         }
         
         // CNN Technology Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
                 .clickable { onNavigateToCNN() },
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer
             )
         ) {
@@ -126,13 +143,12 @@ fun HomeView(
         }
         
         // Cataract Information Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
@@ -146,6 +162,19 @@ fun HomeView(
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Image(
+                    painter = painterResource(id = R.drawable.img_cataract_info),
+                    contentDescription = "Cataract vs Normal Eye",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { fullScreenImageRes = R.drawable.img_cataract_info },
+                    contentScale = ContentScale.Crop
+                )
+                
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = stringResource(id = R.string.cataracts_description),
@@ -162,13 +191,12 @@ fun HomeView(
         }
         
         // Prevention Tips Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             )
         ) {
@@ -192,13 +220,12 @@ fun HomeView(
         }
         
         // Treatment Information Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
@@ -222,13 +249,12 @@ fun HomeView(
         }
         
         // App Information Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )
         ) {

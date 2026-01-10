@@ -61,7 +61,11 @@ import com.dicoding.cataract_detection_app_final_project.presenter.Screen
 import com.dicoding.cataract_detection_app_final_project.theme.CataractDetectionExpressiveTheme
 import com.dicoding.cataract_detection_app_final_project.utils.ImagePicker
 import com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager
+import com.dicoding.cataract_detection_app_final_project.utils.UserSession
 import com.dicoding.cataract_detection_app_final_project.view.CNNExplanationView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
+import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
 import com.dicoding.cataract_detection_app_final_project.view.CheckView
 import com.dicoding.cataract_detection_app_final_project.view.ForgotPasswordView
 import com.dicoding.cataract_detection_app_final_project.view.HistoryResultView
@@ -290,6 +294,14 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
         navController.navigate("roi_adjustment")
     }
     val authPresenter = remember { AuthPresenter(context) }
+    
+    // Connect analysis completion to stats update
+    presenter.setAnalysisCompleteCallback { isHealthy ->
+        val currentUser = authPresenter.currentUser.value
+        if (currentUser != null) {
+            authPresenter.updateUserStats(currentUser.uid, isHealthy)
+        }
+    }
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
 
@@ -309,8 +321,21 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
     val authSuccessMessage by authPresenter.successMessage.collectAsState()
     val currentUser by authPresenter.currentUser.collectAsState()
 
-    var userData by remember { mutableStateOf<Map<String, Any>?>(null) }
     var isOnRegistrationScreen by remember { mutableStateOf(false) }
+    
+    // Initialize history repository when user is logged in
+    LaunchedEffect(currentUser) {
+        currentUser?.let { user ->
+            // Initialize history repository
+            presenter.initializeHistory(context, user.uid)
+            
+            // Clean up old images (run in background)
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                val imageStorageManager = ImageStorageManager(context)
+                imageStorageManager.cleanupOldImages(30) // Keep images for 30 days
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (currentScreen == Screen.Splash) {
@@ -323,22 +348,6 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
         registerSuccessMessage?.let {
             // Show toast on login page
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    LaunchedEffect(currentUser) {
-        currentUser?.let { user ->
-            authPresenter.getUserData(user.uid) { data ->
-                userData = data
-            }
-            // Initialize history repository
-            presenter.initializeHistory(context, user.uid)
-            
-            // Clean up old images (run in background)
-            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                val imageStorageManager = ImageStorageManager(context)
-                imageStorageManager.cleanupOldImages(30) // Keep images for 30 days
-            }
         }
     }
 
@@ -398,12 +407,26 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         navController.popBackStack()
                     },
                     onSendResetClick = { email ->
-                        authPresenter.resetPassword(email)
+                        authPresenter.requestPasswordReset(email)
+                    },
+                    onConfirmResetClick = { email, otp, newPassword ->
+                        authPresenter.confirmPasswordReset(email, otp, newPassword)
                     },
                     isLoading = authIsLoading,
                     errorMessage = forgotPasswordErrorMessage,
                     successMessage = forgotPasswordSuccessMessage
                 )
+                
+                // Auto-navigate to login on success
+                LaunchedEffect(forgotPasswordSuccessMessage) {
+                    if (forgotPasswordSuccessMessage?.contains("Password reset successfully") == true) {
+                        delay(2000) // Show success message for 2 seconds
+                        authPresenter.clearForgotPasswordMessages()
+                        navController.navigate(AuthRoute.Login.route) {
+                            popUpTo(AuthRoute.Login.route) { inclusive = true }
+                        }
+                    }
+                }
             }
         }
     } else {
@@ -413,58 +436,67 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                 val currentRoute = navBackStackEntry?.destination?.route ?: NavigationItem.Home.route
 
 
-                val title = when (currentRoute) {
-                    NavigationItem.Home.route -> stringResource(R.string.home)
-                    NavigationItem.Check.route -> stringResource(R.string.check_for_cataract)
-                    NavigationItem.Profile.route -> stringResource(R.string.my_profile)
-                    "settings" -> stringResource(R.string.settings)
-                    "cnn_explanation" -> stringResource(R.string.cnn_title)
-                    "history" -> stringResource(R.string.analysis_history)
-                    "history_result" -> stringResource(R.string.analysis_result)
-                    else -> stringResource(R.string.app_name)
-                }
+                // ROI adjustment is now included in the global top bar
+                if (true) {
+                    val title = when (currentRoute) {
+                        NavigationItem.Home.route -> stringResource(R.string.home)
+                        NavigationItem.Check.route -> stringResource(R.string.check_for_cataract)
+                        NavigationItem.Profile.route -> stringResource(R.string.my_profile)
+                        "settings" -> stringResource(R.string.settings)
+                        "cnn_explanation" -> stringResource(R.string.cnn_title)
+                        "history" -> stringResource(R.string.analysis_history)
+                        "history_result" -> stringResource(R.string.analysis_result)
+                        "result" -> stringResource(R.string.analysis_result)
+                        "roi_adjustment" -> stringResource(R.string.set_image_area_of_interest)
+                        else -> stringResource(R.string.app_name)
+                    }
 
-                val showBackButton = currentRoute == "settings" || currentRoute == "cnn_explanation" || 
-                                   currentRoute == "history" || currentRoute == "history_result" ||
-                                   currentRoute == "result"
+                    val showBackButton = currentRoute == "settings" || currentRoute == "cnn_explanation" || 
+                                       currentRoute == "history" || currentRoute == "history_result" ||
+                                       currentRoute == "result" || currentRoute == "roi_adjustment"
 
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    title = { 
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleLarge
-                        ) 
-                    },
-                    navigationIcon = {
-                        if (showBackButton) {
-                            IconButton(onClick = { 
-                                when (currentRoute) {
-                                    "history" -> navController.navigate(NavigationItem.Profile.route) { 
-                                        popUpTo(NavigationItem.Profile.route) { inclusive = false } 
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
+                        title = { 
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleLarge
+                            ) 
+                        },
+                        navigationIcon = {
+                            if (showBackButton) {
+                                IconButton(onClick = { 
+                                    when (currentRoute) {
+                                        "history" -> navController.navigate(NavigationItem.Profile.route) { 
+                                            popUpTo(NavigationItem.Profile.route) { inclusive = false } 
+                                        }
+                                        "history_result" -> navController.popBackStack()
+                                        "result" -> {
+                                            navController.navigate(NavigationItem.Home.route) {
+                                                popUpTo("result") { inclusive = true }
+                                                launchSingleTop = true
+                                                restoreState = false
+                                            }
+                                            presenter.onClearAllImagesDelayed()
+                                        }
+                                        "roi_adjustment" -> navController.popBackStack()
+                                        else -> navController.popBackStack()
                                     }
-                                    "history_result" -> navController.popBackStack()
-                                    "result" -> navController.navigate(NavigationItem.Home.route) {
-                                        popUpTo("result") { inclusive = true }
-                                        launchSingleTop = true
-                                        restoreState = false
-                                    }
-                                    else -> navController.popBackStack()
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.back)
+                                    )
                                 }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.back)
-                                )
                             }
-                        }
-                    },
-                    scrollBehavior = scrollBehavior
-                )
+                        },
+                        scrollBehavior = scrollBehavior
+                    )
+                }
             },
             bottomBar = {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -473,7 +505,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                 // Hide bottom navigation bar on child pages
                 val isChildPage = currentRoute == "settings" || currentRoute == "cnn_explanation" || 
                                 currentRoute == "history" || currentRoute == "history_result" || 
-                                currentRoute == "result"
+                                currentRoute == "result" || currentRoute == "roi_adjustment"
                 
                 if (isChildPage) {
                     // Hide the bottom bar completely
@@ -600,8 +632,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         onHistoryClick = { navController.navigate("history") },
                         scrollBehavior = scrollBehavior,
                         currentUser = currentUser,
-                        userData = userData,
-                        isLoading = authIsLoading
+                        isLoading = authPresenter.isLoading.collectAsState().value
                     )
                 }
                 composable("roi_adjustment") {
@@ -631,9 +662,22 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                 }
                 composable("history_result") {
                     val history = presenter.getCurrentHistoryForViewing()
+                    val context = LocalContext.current
+                    val scope = rememberCoroutineScope()
+                    val historyRepository = remember { HistoryRepository(context) }
+                    val user = currentUser // Capture for smart cast
+                    
                     HistoryResultView(
                         history = history,
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStack() },
+                        onDeleteClick = {
+                            if (history != null && user != null) {
+                                scope.launch {
+                                    historyRepository.deleteAnalysisHistory(history.id, user.uid)
+                                    navController.popBackStack()
+                                }
+                            }
+                        }
                     )
                 }
                 composable("result") {

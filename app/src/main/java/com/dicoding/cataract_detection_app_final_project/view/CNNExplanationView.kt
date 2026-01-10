@@ -1,103 +1,91 @@
 package com.dicoding.cataract_detection_app_final_project.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Construction
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dicoding.cataract_detection_app_final_project.R
+import com.dicoding.cataract_detection_app_final_project.view.components.FullScreenImageDialog
 
 @Composable
 private fun InfoCard(
-    icon: ImageVector,
+    emoji: String,
     title: String,
     content: String,
     containerColor: androidx.compose.ui.graphics.Color,
     contentColor: androidx.compose.ui.graphics.Color,
+    imageResId: Int? = null,
+    onImageClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Card(
+    androidx.compose.material3.ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.elevatedCardColors(containerColor = containerColor)
     ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.Top
+        Column(
+            modifier = Modifier.padding(20.dp)
         ) {
-            Surface(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                color = contentColor.copy(alpha = 0.12f)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = contentColor
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.size(16.dp))
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = contentColor
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = contentColor.copy(alpha = 0.87f),
-                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            Text(
+                text = "$emoji $title",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = contentColor
+            )
+            
+            if (imageResId != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Image(
+                    painter = painterResource(id = imageResId),
+                    contentDescription = "Illustration",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(androidx.compose.ui.graphics.Color.Black)
+                        .clickable { onImageClick() },
+                    contentScale = ContentScale.Crop
                 )
             }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = contentColor.copy(alpha = 0.87f),
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
+            )
         }
     }
 }
@@ -107,6 +95,15 @@ private fun InfoCard(
 fun CNNExplanationView(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    var fullScreenImageRes by remember { mutableStateOf<Int?>(null) }
+
+    if (fullScreenImageRes != null) {
+        FullScreenImageDialog(
+            imageResId = fullScreenImageRes!!,
+            onDismissRequest = { fullScreenImageRes = null }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -123,28 +120,22 @@ fun CNNExplanationView(
                 .padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(id = R.string.cnn_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
         }
 
         // CNN Overview Card
         InfoCard(
-            icon = Icons.Default.Psychology,
+            emoji = "🧠",
             title = stringResource(id = R.string.cnn_overview),
             content = stringResource(id = R.string.cnn_overview_content),
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            imageResId = R.drawable.img_cnn_architecture,
+            onImageClick = { fullScreenImageRes = R.drawable.img_cnn_architecture }
         )
 
         // How CNN Works Card
         InfoCard(
-            icon = Icons.Default.Construction,
+            emoji = "⚙️",
             title = stringResource(id = R.string.cnn_how_it_works),
             content = stringResource(id = R.string.cnn_how_it_works_content),
             containerColor = MaterialTheme.colorScheme.surface,
@@ -153,7 +144,7 @@ fun CNNExplanationView(
 
         // CNN Layers Card
         InfoCard(
-            icon = Icons.Default.Construction,
+            emoji = "🏗️",
             title = stringResource(id = R.string.cnn_layers),
             content = stringResource(id = R.string.cnn_layers_content),
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -162,7 +153,7 @@ fun CNNExplanationView(
 
         // CNN in Cataract Detection Card
         InfoCard(
-            icon = Icons.Default.Visibility,
+            emoji = "🔍",
             title = stringResource(id = R.string.cnn_in_cataract_detection),
             content = stringResource(id = R.string.cnn_in_cataract_detection_content),
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -171,7 +162,7 @@ fun CNNExplanationView(
 
         // Advantages Card
         InfoCard(
-            icon = Icons.Default.CheckCircle,
+            emoji = "✅",
             title = stringResource(id = R.string.cnn_advantages),
             content = stringResource(id = R.string.cnn_advantages_content),
             containerColor = MaterialTheme.colorScheme.surface,
@@ -180,7 +171,7 @@ fun CNNExplanationView(
 
         // Limitations Card
         InfoCard(
-            icon = Icons.Default.Warning,
+            emoji = "⚠️",
             title = stringResource(id = R.string.cnn_limitations),
             content = stringResource(id = R.string.cnn_limitations_content),
             containerColor = MaterialTheme.colorScheme.errorContainer,

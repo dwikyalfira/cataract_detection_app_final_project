@@ -17,6 +17,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,12 +50,23 @@ import com.dicoding.cataract_detection_app_final_project.R
 fun ForgotPasswordView(
     onBackClick: () -> Unit,
     onSendResetClick: (String) -> Unit,
+    onConfirmResetClick: (String, String, String) -> Unit,
     isLoading: Boolean = false,
     errorMessage: String? = null,
     successMessage: String? = null
 ) {
     var email by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
+    var otp by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    
+    // State to track if OTP has been sent
+    var isOtpSent by remember { mutableStateOf(false) }
+
+    // Update state when success message contains "OTP"
+    if (successMessage?.contains("OTP") == true && !isOtpSent) {
+        isOtpSent = true
+    }
 
     Column(
         modifier = Modifier
@@ -99,7 +115,7 @@ fun ForgotPasswordView(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(id = R.string.reset_password_description),
+                text = if (isOtpSent) stringResource(id = R.string.enter_otp_instruction) else stringResource(id = R.string.reset_password_description),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -112,13 +128,10 @@ fun ForgotPasswordView(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
         ) {
-            // Email Field
+            // Email Field (Always visible, read-only if OTP sent)
             OutlinedTextField(
                 value = email,
-                onValueChange = { 
-                    email = it
-                    emailError = ""
-                },
+                onValueChange = { email = it },
                 label = { Text(stringResource(id = R.string.email)) },
                 placeholder = { Text(stringResource(id = R.string.email_hint)) },
                 leadingIcon = {
@@ -129,14 +142,56 @@ fun ForgotPasswordView(
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !isLoading && !isOtpSent,
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                isError = emailError.isNotEmpty(),
-                supportingText = if (emailError.isNotEmpty()) {
-                    { Text(emailError) }
-                } else null
+                shape = RoundedCornerShape(12.dp)
             )
+
+            if (isOtpSent) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // OTP Field
+                OutlinedTextField(
+                    value = otp,
+                    onValueChange = { otp = it },
+                    label = { Text(stringResource(id = R.string.otp_code)) },
+                    placeholder = { Text(stringResource(id = R.string.otp_hint)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading,
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // New Password Field
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text(stringResource(id = R.string.new_password_label)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = stringResource(id = R.string.password)
+                        )
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (passwordVisible) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
+                            )
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading,
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -168,13 +223,11 @@ fun ForgotPasswordView(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Send Reset Link Button
+            // Action Button
             Button(
                 onClick = {
-                    if (email.isBlank()) {
-                        emailError = "Email is required"
-                    } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        emailError = "Please enter a valid email address"
+                    if (isOtpSent) {
+                        onConfirmResetClick(email, otp, newPassword)
                     } else {
                         onSendResetClick(email)
                     }
@@ -182,7 +235,7 @@ fun ForgotPasswordView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = !isLoading && email.isNotBlank(),
+                enabled = !isLoading && email.isNotBlank() && (!isOtpSent || (otp.isNotBlank() && newPassword.isNotBlank())),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
@@ -195,7 +248,7 @@ fun ForgotPasswordView(
                     )
                 } else {
                     Text(
-                        text = stringResource(id = R.string.send_reset_link),
+                        text = if (isOtpSent) stringResource(id = R.string.reset_password_button) else stringResource(id = R.string.send_reset_link),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
@@ -213,7 +266,7 @@ fun ForgotPasswordView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Remember your password? ",
+                    text = stringResource(id = R.string.remember_password),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

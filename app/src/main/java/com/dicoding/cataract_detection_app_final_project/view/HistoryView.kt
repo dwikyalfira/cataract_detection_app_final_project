@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -151,31 +154,36 @@ fun HistoryView(
         BoxWithConstraints(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                if (analysisHistory.isEmpty()) {
+            if (analysisHistory.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
                     EmptyHistoryState()
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 80.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        analysisHistory.forEach { history ->
-                            HistoryItem(
-                                history = history,
-                                onViewClick = { onViewAnalysis(history) },
-                                onDeleteClick = { showDeleteDialog = history }
-                            )
-                        }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(
+                        items = analysisHistory,
+                        key = { _, item -> item.id }
+                    ) { index, history ->
+                        HistoryItem(
+                            index = index + 1,
+                            history = history,
+                            onViewClick = { onViewAnalysis(history) },
+                            onDeleteClick = { showDeleteDialog = history }
+                        )
                     }
                 }
             }
         }
+        
+        // ... (Dialogs remain same)
         
         // Clear All Confirmation Dialog
         if (showClearAllDialog) {
@@ -329,10 +337,12 @@ fun HistoryItemPreview() {
         predictionResult = "Normal",
         confidence = 0.95f
     )
-    HistoryItem(history = sampleHistory, onViewClick = {}, onDeleteClick = {})
+    HistoryItem(index = 1, history = sampleHistory, onViewClick = {}, onDeleteClick = {})
 }
+
 @Composable
 private fun HistoryItem(
+    index: Int,
     history: AnalysisHistory,
     onViewClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -355,27 +365,41 @@ private fun HistoryItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Result badge
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (history.isHealthy()) 
-                            MaterialTheme.colorScheme.primaryContainer 
-                        else 
-                            MaterialTheme.colorScheme.errorContainer
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = history.predictionResult,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold
+                    // Number Badge
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .background(MaterialTheme.colorScheme.secondaryContainer, androidx.compose.foundation.shape.CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "$index",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+
+                    // Result badge
+                    val statusColor = history.getResultColor()
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = statusColor.copy(alpha = 0.1f)
                         ),
-                        color = if (history.isHealthy()) 
-                            MaterialTheme.colorScheme.onPrimaryContainer 
-                        else 
-                            MaterialTheme.colorScheme.onErrorContainer
-                    )
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = history.getLocalizedResult(),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = statusColor
+                        )
+                    }
                 }
                 
                 // Delete button

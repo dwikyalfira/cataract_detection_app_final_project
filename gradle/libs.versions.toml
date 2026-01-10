@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.1"
+agp = "8.13.2"
 firebaseBom = "34.2.0"
 firebaseUiAuth = "9.0.0"
 kotlin = "2.0.21"
@@ -17,6 +17,7 @@ material = "1.13.0"
 firebaseCrashlyticsBuildtools = "3.0.6"
 foundationLayout = "1.9.2"
 foundationVersion = "1.9.2"
+roomExternalAntlr = "2.8.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
+androidx-room-external-antlr = { group = "androidx.room", name = "room-external-antlr", version.ref = "roomExternalAntlr" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

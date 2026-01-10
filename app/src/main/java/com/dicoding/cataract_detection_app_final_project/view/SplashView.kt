@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dicoding.cataract_detection_app_final_project.R
 
 @Composable
 fun SplashView() {
@@ -46,10 +45,10 @@ fun SplashView() {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    painter = androidx.compose.ui.res.painterResource(id = R.mipmap.ic_launcher),
                     contentDescription = "App Logo",
-                    modifier = Modifier.size(60.dp),
-                    tint = Color(0xFF1976D2)
+                    modifier = Modifier.size(80.dp),
+                    tint = Color.Unspecified
                 )
             }
             
@@ -57,7 +56,7 @@ fun SplashView() {
             
             // App Name
             Text(
-                text = "Cataract Detector",
+                text = androidx.compose.ui.res.stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -70,10 +69,11 @@ fun SplashView() {
             
             // Subtitle
             Text(
-                text = "AI-Powered Eye Health Detection",
+                text = androidx.compose.ui.res.stringResource(id = R.string.app_tagline),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                 ),
                 textAlign = TextAlign.Center
             )

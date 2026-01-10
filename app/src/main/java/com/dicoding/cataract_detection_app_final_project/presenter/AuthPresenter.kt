@@ -1,31 +1,33 @@
 package com.dicoding.cataract_detection_app_final_project.presenter
 
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import com.dicoding.cataract_detection_app_final_project.data.api.ApiClient
+import com.dicoding.cataract_detection_app_final_project.data.api.ApiResponse
+import com.dicoding.cataract_detection_app_final_project.data.api.UserData
 import com.dicoding.cataract_detection_app_final_project.utils.ErrorTranslator
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
+import com.dicoding.cataract_detection_app_final_project.utils.UserSession
+import com.dicoding.cataract_detection_app_final_project.utils.UserSessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 
 class AuthPresenter(private var context: Context) {
-    private val auth = FirebaseAuth.getInstance()
-    private val firestore = FirebaseFirestore.getInstance()
+    private val apiService = ApiClient.instance
+    private val sessionManager = UserSessionManager(context)
     
     private val _isAuthenticated = MutableStateFlow(false)
     private val _isAuthenticatedInternal = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
     
-    private val _currentUser = MutableStateFlow<FirebaseUser?>(null)
-    val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
+    private val _currentUser = MutableStateFlow<UserSession?>(null)
+    val currentUser: StateFlow<UserSession?> = _currentUser.asStateFlow()
     
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -59,45 +61,17 @@ class AuthPresenter(private var context: Context) {
     fun updateContext(newContext: Context) {
         android.util.Log.d("AuthPresenter", "Updating context, new locale: ${newContext.resources.configuration.locales[0]}")
         context = newContext
-        
-        // Update Firebase language code
-        val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        val lang = prefs.getString("language", "id") ?: "id"
-        val firebaseLangCode = when (lang) {
-            "id" -> "id"
-            "en" -> "en"
-            else -> "id"
-        }
-        auth.setLanguageCode(firebaseLangCode)
-        android.util.Log.d("AuthPresenter", "Firebase language code updated to: $firebaseLangCode")
     }
     
     init {
-        try {
-            // Set Firebase language code based on user preferences
-            val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-            val lang = prefs.getString("language", "id") ?: "id"
-            val firebaseLangCode = when (lang) {
-                "id" -> "id"
-                "en" -> "en"
-                else -> "id"
+        // Check for existing session
+        CoroutineScope(Dispatchers.Main).launch {
+            sessionManager.userSession.collect { session ->
+                android.util.Log.d("AuthPresenter", "Session update: ${session?.email}")
+                _currentUser.value = session
+                _isAuthenticatedInternal.value = session != null
+                _isAuthenticated.value = session != null && !_isRegistering.value
             }
-            auth.setLanguageCode(firebaseLangCode)
-            android.util.Log.d("AuthPresenter", "Firebase language code set to: $firebaseLangCode")
-            
-            // Listen for authentication state changes
-            auth.addAuthStateListener { firebaseAuth ->
-                val user = firebaseAuth.currentUser
-                android.util.Log.d("AuthPresenter", "Auth state changed - user: ${user?.uid}, email: ${user?.email}")
-                _currentUser.value = user
-                _isAuthenticatedInternal.value = user != null
-                // Only set authenticated to true if not registering
-                _isAuthenticated.value = user != null && !_isRegistering.value
-            }
-        } catch (e: Exception) {
-            // Handle Firebase initialization errors gracefully
-            android.util.Log.w("AuthPresenter", "Firebase Auth initialization error: ${e.message}")
-            _errorMessage.value = ErrorTranslator.translateError(context, "Authentication service unavailable")
         }
     }
     
@@ -110,17 +84,35 @@ class AuthPresenter(private var context: Context) {
         _isLoading.value = true
         _loginErrorMessage.value = null
         
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
+        apiService.login(email, password).enqueue(object : Callback<ApiResponse<UserData>> {
+            override fun onResponse(
+                call: Call<ApiResponse<UserData>>,
+                response: Response<ApiResponse<UserData>>
+            ) {
                 _isLoading.value = false
-                if (task.isSuccessful) {
+                val body = response.body()
+                if (response.isSuccessful && body != null && body.status == "success") {
                     _loginErrorMessage.value = null
+                    val userData = body.data
+                    if (userData != null) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            sessionManager.saveUserSession(userData.uid, userData.name, email, userData.createdAt)
+                        }
+                    }
                 } else {
-                    val errorMsg = task.exception?.message ?: "Login failed"
-                    android.util.Log.d("AuthPresenter", "Firebase login error: '$errorMsg'")
+                    val errorMsg = body?.message ?: "Login failed"
+                    android.util.Log.d("AuthPresenter", "Login error: '$errorMsg'")
                     _loginErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
                 }
             }
+
+            override fun onFailure(call: Call<ApiResponse<UserData>>, t: Throwable) {
+                _isLoading.value = false
+                val errorMsg = t.message ?: "Network error"
+                android.util.Log.d("AuthPresenter", "Login network error: '$errorMsg'")
+                _loginErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+            }
+        })
     }
     
     fun register(name: String, email: String, password: String, confirmPassword: String) {
@@ -143,78 +135,54 @@ class AuthPresenter(private var context: Context) {
         _registerErrorMessage.value = null
         _registerSuccessMessage.value = null
         _isRegistering.value = true
-        // Update authentication state to prevent main app from showing
-        _isAuthenticated.value = _isAuthenticatedInternal.value && !_isRegistering.value
         
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
+        apiService.register(name, email, password).enqueue(object : Callback<ApiResponse<Void>> {
+            override fun onResponse(
+                call: Call<ApiResponse<Void>>,
+                response: Response<ApiResponse<Void>>
+            ) {
                 _isLoading.value = false
-                if (task.isSuccessful) {
-                    // Save user data to Firestore
-                    val user = auth.currentUser
-                    if (user != null) {
-                        saveUserData(user.uid, name, email)
-                        // Sign out user immediately after successful registration
-                        auth.signOut()
-                        // Set success message to inform user they need to login
-                        _registerSuccessMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.success_account_created)
-                    }
+                _isRegistering.value = false
+                val body = response.body()
+                
+                if (response.isSuccessful && body != null && body.status == "success") {
+                    _registerSuccessMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.success_account_created)
                     _registerErrorMessage.value = null
                 } else {
-                    val errorMsg = task.exception?.message ?: "Registration failed"
-                    android.util.Log.d("AuthPresenter", "Firebase register error: '$errorMsg'")
+                    val errorMsg = body?.message ?: "Registration failed"
+                    android.util.Log.d("AuthPresenter", "Register error: '$errorMsg'")
                     _registerErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
                 }
-                _isRegistering.value = false
-                // Update authentication state after registration completes
-                _isAuthenticated.value = _isAuthenticatedInternal.value && !_isRegistering.value
             }
-    }
-    
-    private fun saveUserData(uid: String, name: String, email: String) {
-        val userData = hashMapOf(
-            "name" to name,
-            "email" to email,
-            "createdAt" to System.currentTimeMillis(),
-            "totalScans" to 0,
-            "healthyScans" to 0,
-            "alertScans" to 0
-        )
-        
-        android.util.Log.d("AuthPresenter", "Saving user data for uid: $uid, data: $userData")
-        android.util.Log.d("AuthPresenter", "Name being saved: $name")
-        android.util.Log.d("AuthPresenter", "Email being saved: $email")
-        
-        try {
-            firestore.collection("users")
-                .document(uid)
-                .set(userData)
-                .addOnSuccessListener {
-                    android.util.Log.d("AuthPresenter", "User data saved successfully for uid: $uid")
-                }
-                .addOnFailureListener { exception ->
-                    android.util.Log.w("AuthPresenter", "Failed to save user data: ${exception.message}")
-                }
-        } catch (e: Exception) {
-            android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
-        }
+
+            override fun onFailure(call: Call<ApiResponse<Void>>, t: Throwable) {
+                _isLoading.value = false
+                _isRegistering.value = false
+                val errorMsg = t.message ?: "Network error"
+                android.util.Log.d("AuthPresenter", "Register network error: '$errorMsg'")
+                _registerErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+            }
+        })
     }
     
     fun logout() {
         _isLoading.value = true
         _errorMessage.value = null
         
-        try {
-            auth.signOut()
-            // Sign out is synchronous, so we can set loading to false immediately
+        CoroutineScope(Dispatchers.IO).launch {
+            sessionManager.clearSession()
             _isLoading.value = false
-        } catch (e: Exception) {
-            _isLoading.value = false
-            _errorMessage.value = ErrorTranslator.translateError(context, e.message ?: "Logout failed")
         }
     }
     
-    fun resetPassword(email: String) {
+    /*
+    fun deleteAccount(password: String, callback: (Boolean, String) -> Unit) {
+        // TODO: Implement delete account with local API
+        callback(false, "Feature not available in local mode yet")
+    }
+    */
+    
+    fun requestPasswordReset(email: String) {
         if (email.isBlank()) {
             _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, "Please enter your email")
             return
@@ -224,20 +192,119 @@ class AuthPresenter(private var context: Context) {
         _forgotPasswordErrorMessage.value = null
         _forgotPasswordSuccessMessage.value = null
         
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
+        apiService.forgotPassword(email).enqueue(object : Callback<ApiResponse<Map<String, String>>> {
+            override fun onResponse(
+                call: Call<ApiResponse<Map<String, String>>>,
+                response: Response<ApiResponse<Map<String, String>>>
+            ) {
                 _isLoading.value = false
-                if (task.isSuccessful) {
-                    _forgotPasswordSuccessMessage.value = ErrorTranslator.translateError(context, "Password reset email sent")
-                    _forgotPasswordErrorMessage.value = null
+                val body = response.body()
+                if (response.isSuccessful && body != null && body.status == "success") {
+                    // For development, we might want to log the OTP if returned
+                    val otpDebug = body.data?.get("otp_debug")
+                    if (otpDebug != null) {
+                        android.util.Log.d("AuthPresenter", "OTP Debug: $otpDebug")
+                    }
+                    _forgotPasswordSuccessMessage.value = "OTP sent to your email (Check logs for Dev)"
                 } else {
-                    val errorMsg = task.exception?.message ?: "Failed to send reset email"
+                    val errorMsg = body?.message ?: "Failed to send reset link"
                     _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
-                    _forgotPasswordSuccessMessage.value = null
                 }
             }
+
+            override fun onFailure(call: Call<ApiResponse<Map<String, String>>>, t: Throwable) {
+                _isLoading.value = false
+                val errorMsg = t.message ?: "Network error"
+                _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+            }
+        })
+    }
+
+    fun confirmPasswordReset(email: String, otp: String, newPassword: String) {
+        if (email.isBlank() || otp.isBlank() || newPassword.isBlank()) {
+            _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, "Please fill in all fields")
+            return
+        }
+        
+        _isLoading.value = true
+        _forgotPasswordErrorMessage.value = null
+        
+        apiService.resetPassword(email, otp, newPassword).enqueue(object : Callback<ApiResponse<Void>> {
+            override fun onResponse(
+                call: Call<ApiResponse<Void>>,
+                response: Response<ApiResponse<Void>>
+            ) {
+                _isLoading.value = false
+                val body = response.body()
+                if (response.isSuccessful && body != null && body.status == "success") {
+                    _forgotPasswordSuccessMessage.value = "Password reset successfully. Please login."
+                } else {
+                    val errorMsg = body?.message ?: "Failed to reset password"
+                    _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse<Void>>, t: Throwable) {
+                _isLoading.value = false
+                val errorMsg = t.message ?: "Network error"
+                _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
+            }
+        })
+    }
+
+    /*
+    fun getUserData(uid: String, callback: (Map<String, Any>?) -> Unit) {
+        // TODO: Implement get user data
+        callback(null)
     }
     
+    fun updateUserStats(uid: String, isHealthy: Boolean) {
+        // TODO: Implement update stats
+    }
+    */
+    
+    fun changePassword(currentPassword: String, newPassword: String, callback: (Boolean, String) -> Unit) {
+        val user = _currentUser.value
+        if (user == null) {
+            callback(false, ErrorTranslator.translateError(context, "User not authenticated"))
+            return
+        }
+        
+        if (currentPassword.isBlank() || newPassword.isBlank()) {
+            callback(false, ErrorTranslator.translateError(context, "Please fill in all fields"))
+            return
+        }
+        
+        if (newPassword.length < 6) {
+            callback(false, ErrorTranslator.translateError(context, "Password must be at least 6 characters"))
+            return
+        }
+        
+        _isLoading.value = true
+        
+        apiService.changePassword(user.uid, currentPassword, newPassword).enqueue(object : Callback<ApiResponse<Void>> {
+            override fun onResponse(
+                call: Call<ApiResponse<Void>>,
+                response: Response<ApiResponse<Void>>
+            ) {
+                _isLoading.value = false
+                val body = response.body()
+                if (response.isSuccessful && body != null && body.status == "success") {
+                    callback(true, ErrorTranslator.translateError(context, "Password changed successfully"))
+                } else {
+                    val errorMsg = body?.message ?: "Failed to change password"
+                    callback(false, ErrorTranslator.translateError(context, errorMsg))
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse<Void>>, t: Throwable) {
+                _isLoading.value = false
+                val errorMsg = t.message ?: "Network error"
+                callback(false, ErrorTranslator.translateError(context, errorMsg))
+            }
+        })
+    }
+
     fun clearError() {
         _errorMessage.value = null
     }
@@ -298,191 +365,67 @@ class AuthPresenter(private var context: Context) {
         _isAuthenticated.value = _isAuthenticatedInternal.value && !_isRegistering.value
     }
     
+    // Placeholder for deleteAccount to avoid compilation errors in SettingsView
     fun deleteAccount(password: String, callback: (Boolean, String) -> Unit) {
-        android.util.Log.d("AuthPresenter", "deleteAccount called with password length: ${password.length}")
-        
-        val user = auth.currentUser
-        if (user == null) {
-            android.util.Log.d("AuthPresenter", "No user logged in")
-            callback(false, ErrorTranslator.translateError(context, "No user logged in"))
-            return
-        }
-        
-        if (password.isBlank()) {
-            android.util.Log.d("AuthPresenter", "Password is blank")
-            callback(false, ErrorTranslator.translateError(context, "Please enter your password"))
-            return
-        }
-        
-        _isLoading.value = true
-        _errorMessage.value = null
-        _successMessage.value = null
-        
-        val userId = user.uid
-        android.util.Log.d("AuthPresenter", "Starting account deletion for user: $userId")
-        
-        // First, re-authenticate the user with their password
-        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(user.email!!, password)
-        user.reauthenticate(credential)
-            .addOnCompleteListener { reauthTask ->
-                android.util.Log.d("AuthPresenter", "Re-authentication result: ${reauthTask.isSuccessful}")
-                if (reauthTask.isSuccessful) {
-                    android.util.Log.d("AuthPresenter", "Password correct, proceeding with deletion")
-                    // Password is correct, proceed with account deletion
-                    // Skip Firestore deletion since it's causing hangs, go directly to auth deletion
-                    android.util.Log.d("AuthPresenter", "Skipping Firestore deletion, proceeding directly to auth account deletion")
-                    deleteAuthAccount(user, userId, callback)
-                } else {
-                    _isLoading.value = false
-                    val errorMsg = reauthTask.exception?.message ?: "Incorrect password"
-                    android.util.Log.e("AuthPresenter", "Re-authentication failed: $errorMsg")
-                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
-                    _successMessage.value = null
-                    callback(false, ErrorTranslator.translateError(context, "Incorrect password"))
-                }
-            }
-    }
-    
-    private fun deleteAuthAccount(user: FirebaseUser, userId: String, callback: (Boolean, String) -> Unit) {
-        // Delete the user account from Firebase Auth
-        user.delete()
-            .addOnCompleteListener { task ->
-                _isLoading.value = false
-                android.util.Log.d("AuthPresenter", "Auth account deletion result: ${task.isSuccessful}")
-                if (task.isSuccessful) {
-                    android.util.Log.d("AuthPresenter", "Account deleted successfully, clearing local data")
-                    // Clear local user data and history
-                    clearUserLocalData(userId)
-                    
-                    _successMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.account_deleted_successfully)
-                    _errorMessage.value = null
-                    android.util.Log.d("AuthPresenter", "Calling success callback")
-                    callback(true, context.getString(com.dicoding.cataract_detection_app_final_project.R.string.account_deleted_successfully))
-                    
-                    // Sign out after a delay to allow snackbar to show
-                    CoroutineScope(Dispatchers.Main).launch {
-                        kotlinx.coroutines.delay(2000) // 2 second delay
-                        android.util.Log.d("AuthPresenter", "Signing out user after delay")
-                        auth.signOut()
-                    }
-                } else {
-                    val errorMsg = task.exception?.message ?: "Failed to delete account"
-                    android.util.Log.e("AuthPresenter", "Failed to delete auth account: $errorMsg")
-                    _errorMessage.value = ErrorTranslator.translateError(context, errorMsg)
-                    _successMessage.value = null
-                    callback(false, ErrorTranslator.translateError(context, errorMsg))
-                }
-            }
-    }
-    
-    private fun clearUserLocalData(userId: String) {
-        try {
-            // Clear analysis history
-            CoroutineScope(Dispatchers.IO).launch {
-                val historyRepository = com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository(context)
-                historyRepository.clearAllHistory(userId)
-            }
-            
-            // Clear any cached images for this user
-            CoroutineScope(Dispatchers.IO).launch {
-                val imageStorageManager = com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager(context)
-                imageStorageManager.clearUserImages(userId)
-            }
-            
-            android.util.Log.d("AuthPresenter", "Cleared local data for user: $userId")
-        } catch (e: Exception) {
-            android.util.Log.w("AuthPresenter", "Error clearing local data: ${e.message}")
-        }
-    }
-    
-    fun getUserData(uid: String, callback: (Map<String, Any>?) -> Unit) {
-        android.util.Log.d("AuthPresenter", "Getting user data for uid: $uid")
-        try {
-            firestore.collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener { document ->
-                    android.util.Log.d("AuthPresenter", "User data retrieved: ${document.data}")
-                    callback(document.data)
-                }
-                .addOnFailureListener { exception ->
-                    android.util.Log.w("AuthPresenter", "Failed to get user data: ${exception.message}")
-                    callback(null)
-                }
-        } catch (e: Exception) {
-            android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
-            callback(null)
-        }
-    }
-    
-    fun updateUserStats(uid: String, isHealthy: Boolean) {
-        val updates = hashMapOf<String, Any>(
-            "totalScans" to com.google.firebase.firestore.FieldValue.increment(1)
-        )
-        
-        if (isHealthy) {
-            updates["healthyScans"] = com.google.firebase.firestore.FieldValue.increment(1)
-        } else {
-            updates["alertScans"] = com.google.firebase.firestore.FieldValue.increment(1)
-        }
-        
-        try {
-            firestore.collection("users")
-                .document(uid)
-                .update(updates)
-                .addOnSuccessListener {
-                    // Stats updated successfully
-                }
-                .addOnFailureListener { exception ->
-                    android.util.Log.w("AuthPresenter", "Failed to update user stats: ${exception.message}")
-                }
-        } catch (e: Exception) {
-            android.util.Log.w("AuthPresenter", "Firestore operation failed: ${e.message}")
-        }
-    }
-    
-    fun changePassword(currentPassword: String, newPassword: String, callback: (Boolean, String) -> Unit) {
-        val user = auth.currentUser
+        val user = _currentUser.value
         if (user == null) {
             callback(false, ErrorTranslator.translateError(context, "User not authenticated"))
             return
         }
-        
-        if (currentPassword.isBlank() || newPassword.isBlank()) {
-            callback(false, ErrorTranslator.translateError(context, "Please fill in all fields"))
+
+        if (password.isBlank()) {
+            callback(false, ErrorTranslator.translateError(context, "Please enter your password"))
             return
         }
-        
-        if (newPassword.length < 6) {
-            callback(false, ErrorTranslator.translateError(context, "Password must be at least 6 characters"))
-            return
-        }
-        
+
         _isLoading.value = true
-        
-        // Re-authenticate user with current password
-        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(user.email!!, currentPassword)
-        user.reauthenticate(credential)
-            .addOnCompleteListener { reauthTask ->
-                if (reauthTask.isSuccessful) {
-                    // Update password
-                    user.updatePassword(newPassword)
-                        .addOnCompleteListener { updateTask ->
-                            _isLoading.value = false
-                            if (updateTask.isSuccessful) {
-                                callback(true, ErrorTranslator.translateError(context, "Password changed successfully"))
-                            } else {
-                                val errorMsg = updateTask.exception?.message ?: "Failed to change password"
-                                callback(false, ErrorTranslator.translateError(context, errorMsg))
-                            }
-                        }
+
+        apiService.deleteAccount(user.uid, password).enqueue(object : Callback<ApiResponse<Void>> {
+            override fun onResponse(
+                call: Call<ApiResponse<Void>>,
+                response: Response<ApiResponse<Void>>
+            ) {
+                _isLoading.value = false
+                val body = response.body()
+                if (response.isSuccessful && body != null && body.status == "success") {
+                    // Clear session on successful deletion
+                    CoroutineScope(Dispatchers.IO).launch {
+                        sessionManager.clearSession()
+                    }
+                    callback(true, ErrorTranslator.translateError(context, "Account deleted successfully"))
                 } else {
-                    _isLoading.value = false
-                    val errorMsg = reauthTask.exception?.message ?: "Current password is incorrect"
+                    val errorMsg = body?.message ?: "Failed to delete account"
                     callback(false, ErrorTranslator.translateError(context, errorMsg))
                 }
             }
+
+            override fun onFailure(call: Call<ApiResponse<Void>>, t: Throwable) {
+                _isLoading.value = false
+                val errorMsg = t.message ?: "Network error"
+                callback(false, ErrorTranslator.translateError(context, errorMsg))
+            }
+        })
     }
-    
-    
+
+    // Placeholder for updateUserStats to avoid compilation errors
+    fun updateUserStats(uid: String, isHealthy: Boolean) {
+        val isHealthyStr = if (isHealthy) "true" else "false"
+        
+        apiService.updateUserStats(uid, isHealthyStr).enqueue(object : Callback<ApiResponse<Void>> {
+            override fun onResponse(
+                call: Call<ApiResponse<Void>>,
+                response: Response<ApiResponse<Void>>
+            ) {
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    android.util.Log.d("AuthPresenter", "Stats updated successfully")
+                } else {
+                    android.util.Log.e("AuthPresenter", "Failed to update stats: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse<Void>>, t: Throwable) {
+                android.util.Log.e("AuthPresenter", "Error updating stats: ${t.message}")
+            }
+        })
+    }
 }

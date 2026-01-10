@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,7 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dicoding.cataract_detection_app_final_project.R
-import com.google.firebase.auth.FirebaseUser
+import com.dicoding.cataract_detection_app_final_project.utils.UserSession
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -98,7 +97,7 @@ fun ProfileInfoSection(
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Medium
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -124,72 +123,46 @@ fun ProfileView(
     onSettingsClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    currentUser: FirebaseUser? = null,
-    userData: Map<String, Any>? = null,
+    currentUser: UserSession? = null,
+    userData: Map<String, Any>? = null, // Kept for compatibility but mostly unused now
     isLoading: Boolean = false
 ) {
     val scrollState = rememberScrollState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     
-    // Extract user information with detailed debugging
-    val firestoreName = userData?.get("name") as? String
-    val firebaseDisplayName = currentUser?.displayName
+    // Extract user information
+    val userName = currentUser?.name ?: stringResource(R.string.unknown)
     val userEmail = currentUser?.email ?: stringResource(R.string.unknown)
     
-    // Fallback name extraction from email if no name is available
-    val fallbackName = if (currentUser?.email != null) {
+    // Format joined date
+    val formattedJoinedDate = remember(currentUser?.createdAt) {
         try {
-            currentUser.email!!.substringBefore("@").replace(".", " ").split(" ").joinToString(" ") { 
-                it.replaceFirstChar { char -> char.uppercase() } 
+            val dateStr = currentUser?.createdAt
+            if (!dateStr.isNullOrBlank()) {
+                // Assuming backend sends MySQL format: "yyyy-MM-dd HH:mm:ss"
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                val date = inputFormat.parse(dateStr)
+                if (date != null) {
+                    outputFormat.format(date)
+                } else {
+                    dateStr // Fallback to original string if parsing fails
+                }
+            } else {
+                "Unknown" // Or use stringResource(R.string.unknown) if available in context
             }
         } catch (e: Exception) {
-            android.util.Log.w("ProfileView", "Error extracting name from email: ${e.message}")
-            stringResource(R.string.unknown)
+            android.util.Log.e("ProfileView", "Error parsing date", e)
+            currentUser?.createdAt ?: "Unknown"
         }
-    } else {
-        stringResource(R.string.unknown)
-    }
-    
-    // Fix: Handle empty strings properly (not just null)
-    val userName = when {
-        !firestoreName.isNullOrBlank() -> firestoreName
-        !firebaseDisplayName.isNullOrBlank() -> firebaseDisplayName
-        else -> fallbackName
-    }
-    val joinedDate = userData?.get("createdAt") as? Long
-    
-    // Fallback: If no joined date from Firestore, use account creation time
-    val fallbackJoinedDate = if (joinedDate == null && currentUser != null) {
-        currentUser.metadata?.creationTimestamp ?: System.currentTimeMillis()
-    } else {
-        joinedDate
-    }
+    } 
     
     // Debug logging
     android.util.Log.d("ProfileView", "=== PROFILE VIEW DEBUG ===")
-    android.util.Log.d("ProfileView", "userData: $userData")
     android.util.Log.d("ProfileView", "currentUser: $currentUser")
-    android.util.Log.d("ProfileView", "currentUser?.uid: ${currentUser?.uid}")
-    android.util.Log.d("ProfileView", "currentUser?.email: ${currentUser?.email}")
-    android.util.Log.d("ProfileView", "currentUser?.displayName: ${currentUser?.displayName}")
-    android.util.Log.d("ProfileView", "firestoreName: $firestoreName")
-    android.util.Log.d("ProfileView", "firebaseDisplayName: $firebaseDisplayName")
-    android.util.Log.d("ProfileView", "fallbackName: $fallbackName")
     android.util.Log.d("ProfileView", "userName: $userName")
     android.util.Log.d("ProfileView", "userEmail: $userEmail")
-    android.util.Log.d("ProfileView", "joinedDate: $joinedDate")
-    android.util.Log.d("ProfileView", "fallbackJoinedDate: $fallbackJoinedDate")
-    android.util.Log.d("ProfileView", "currentUser?.metadata?.creationTimestamp: ${currentUser?.metadata?.creationTimestamp}")
     android.util.Log.d("ProfileView", "=== END PROFILE VIEW DEBUG ===")
-    
-    // Format joined date
-    val formattedJoinedDate = if (fallbackJoinedDate != null) {
-        val date = Date(fallbackJoinedDate)
-        val formatter = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
-        formatter.format(date)
-    } else {
-        stringResource(R.string.unknown)
-    }
     
     Column(
         modifier = Modifier
@@ -238,13 +211,12 @@ fun ProfileView(
 //        )
         
         // Profile Card
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
@@ -296,13 +268,13 @@ fun ProfileView(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 // User Info Sections with improved styling
-                Card(
+                androidx.compose.material3.ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
+                    )
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp)
@@ -328,13 +300,12 @@ fun ProfileView(
         Spacer(modifier = Modifier.height(24.dp))
         
         // Analysis History Button - Single Line
-        Card(
+        androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
             onClick = onHistoryClick

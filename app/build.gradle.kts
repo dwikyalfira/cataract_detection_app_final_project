@@ -98,6 +98,12 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.foundation)
+
+    // Retrofit for Networking
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation(libs.androidx.room.external.antlr)
     // Removed firebase.crashlytics.buildtools to fix 16 KB page size compatibility
 
     testImplementation(libs.junit)

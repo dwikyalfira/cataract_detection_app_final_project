@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">Cataract Detector</string>
+    <string name="app_name">KataMata</string>
+    <string name="app_tagline">Check your eyes</string>
     
     <!-- Common -->
     <string name="back">Back</string>
@@ -67,12 +68,18 @@
     
     <!-- Forgot Password -->
     <string name="reset_password">Reset Password</string>
-    <string name="reset_password_description">Enter your email address and we\'ll send you a link to reset your password.</string>
+    <string name="reset_password_description">Enter your email address to receive an OTP code to reset your password.</string>
     <string name="send_reset_link">Send Reset Link</string>
     <string name="back_to_login">Back to Login</string>
     <string name="reset_link_sent">Reset link sent to your email</string>
     <string name="reset_link_failed">Failed to send reset link. Please try again.</string>
     <string name="check_email_instructions">Please check your email and follow the instructions to reset your password.</string>
+    <string name="enter_otp_instruction">Enter OTP and new password</string>
+    <string name="otp_code">OTP Code</string>
+    <string name="otp_hint">Enter 6-digit OTP</string>
+    <string name="new_password_label">New Password</string>
+    <string name="reset_password_button">Reset Password</string>
+    <string name="remember_password">Remember your password? </string>
     
     <!-- Registration -->
     <string name="full_name">Full Name</string>
@@ -138,7 +145,7 @@
     
     <!-- Check Page -->
     <string name="how_to_use">How to use:</string>
-    <string name="check_instructions">1. Upload or capture an image of an eye\n2. The AI will analyze the image\n3. Get instant results about cataract detection</string>
+    <string name="check_instructions">1. Take a photo or upload an image of an eye\n2. Adjust or crop the image if needed\n3. Tap \'Start Analysis\' to get results</string>
     <string name="pick_image">Pick Image</string>
     <string name="capture_image">Capture Image</string>
     <string name="analyzing_image">Analyzing image…</string>
@@ -212,4 +219,6 @@
     <string name="roi_instruction">Mark the pupil by dragging the image and adjusting its size to fit the ellipse.</string>
     <string name="current_scale">Current Scale: %.1fx</string>
     <string name="start_analysis">Start Analysis</string>
+    <string name="back_to_home">Back to Home</string>
+    <string name="analysis_summary">Analysis Summary</string>
 </resources>

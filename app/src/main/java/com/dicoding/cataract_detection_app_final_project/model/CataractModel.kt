@@ -28,7 +28,8 @@ class CataractModel(private val context: Context) {
     private val IMAGE_STD = 127.5f
     
     // Confidence threshold for "Unknown" / "Not an Eye" detection
-    private val CONFIDENCE_THRESHOLD = 0.6f
+    // Increased to 0.75 to filter out random non-eye objects that might accidentally trigger a match
+    private val CONFIDENCE_THRESHOLD = 0.75f
     
     init {
         // Check if model file exists in assets
@@ -37,7 +38,7 @@ class CataractModel(private val context: Context) {
             val modelFiles = assetManager.list("")
             Log.d("CataractModel", "Available assets: ${modelFiles?.joinToString(", ")}")
             
-            if (modelFiles?.contains("cataract_model.tflite") == true) {
+            if (modelFiles?.contains("cataract_model(2).tflite") == true) {
                 Log.d("CataractModel", "Model file found in assets")
                 loadModel()
             } else {
@@ -57,7 +58,7 @@ class CataractModel(private val context: Context) {
     private fun tryAlternativeModelLoading() {
         try {
             Log.d("CataractModel", "Trying alternative model loading...")
-            val inputStream = context.assets.open("cataract_model.tflite")
+            val inputStream = context.assets.open("cataract_model(2).tflite")
             val modelBytes = inputStream.readBytes()
             inputStream.close()
             
@@ -90,7 +91,7 @@ class CataractModel(private val context: Context) {
     private fun loadModel() {
         try {
             Log.d("CataractModel", "Starting model loading...")
-            val modelBuffer = loadModelFile("cataract_model.tflite")
+            val modelBuffer = loadModelFile("cataract_model(2).tflite")
             Log.d("CataractModel", "Model file loaded, buffer size: ${modelBuffer.capacity()}")
             
             // Validate model buffer
@@ -108,14 +109,14 @@ class CataractModel(private val context: Context) {
                 Log.d("CataractModel", "GPU delegate not available, using CPU")
             }
             
-            Log.d("CataractModel", "Creating TensorFlow Lite interpreter...")
-            
-            interpreter = Interpreter(modelBuffer, options)
+            val interpreter =
+                Interpreter(modelBuffer, options)
+            this.interpreter = interpreter
             
             // Test the interpreter
             Log.d("CataractModel", "Testing interpreter...")
-            val inputShape = interpreter?.getInputTensor(0)?.shape()
-            val outputShape = interpreter?.getOutputTensor(0)?.shape()
+            val inputShape = interpreter.getInputTensor(0)?.shape()
+            val outputShape = interpreter.getOutputTensor(0)?.shape()
             Log.d("CataractModel", "Input shape: ${inputShape?.contentToString()}")
             Log.d("CataractModel", "Output shape: ${outputShape?.contentToString()}")
             
@@ -180,6 +181,13 @@ class CataractModel(private val context: Context) {
             val bitmap = loadImageFromUri(imageUri)
             Log.d("CataractModel", "Image loaded, size: ${bitmap.width}x${bitmap.height}")
             
+            // Check image validity (bad lighting, solid colors, etc)
+            if (!validateImage(bitmap)) {
+                Log.d("CataractModel", "Image validation failed (too dark/bright or low variance)")
+                lastConfidence = 0.0f
+                return "Unknown"
+            }
+            
             val inputBuffer = preprocessImage(bitmap)
             Log.d("CataractModel", "Image preprocessed, buffer size: ${inputBuffer.capacity()}")
             
@@ -202,9 +210,6 @@ class CataractModel(private val context: Context) {
             // Calculate confidence
             // If prob > 0.5, it's Normal with confidence 'prob'
             // If prob <= 0.5, it's Cataract with confidence '1 - prob'
-            // Calculate confidence
-            // If prob > 0.5, it's Normal with confidence 'prob'
-            // If prob <= 0.5, it's Cataract with confidence '1 - prob'
             lastConfidence = if (probability > 0.5f) probability else 1.0f - probability
             
             // Return prediction based on threshold
@@ -212,6 +217,7 @@ class CataractModel(private val context: Context) {
             // High probability (> 0.5) -> Normal
             // Low probability (<= 0.5) -> Cataract
             val result = if (lastConfidence < CONFIDENCE_THRESHOLD) {
+                Log.d("CataractModel", "Confidence $lastConfidence below threshold $CONFIDENCE_THRESHOLD -> Unknown")
                 "Unknown"
             } else if (probability > 0.5f) {
                 "Normal"
@@ -226,6 +232,67 @@ class CataractModel(private val context: Context) {
             Log.e("CataractModel", "Error during prediction: ${e.message}", e)
             e.printStackTrace()
             return "Error: ${e.message}"
+        }
+    }
+    
+    /**
+     * Validate image for basic quality checks (brightness, variance)
+     * Returns true if image seems valid, false if likely bad/non-eye
+     */
+    private fun validateImage(bitmap: Bitmap): Boolean {
+        try {
+            // Downsample for speed
+            val smallBitmap = Bitmap.createScaledBitmap(bitmap, 64, 64, true)
+            val width = smallBitmap.width
+            val height = smallBitmap.height
+            val pixels = IntArray(width * height)
+            smallBitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+            
+            var sumBrightness = 0L
+            var sumSqBrightness = 0L
+            
+            for (pixel in pixels) {
+                val r = (pixel shr 16) and 0xFF
+                val g = (pixel shr 8) and 0xFF
+                val b = pixel and 0xFF
+                
+                // Perceived brightness formula
+                val brightness = (0.299 * r + 0.587 * g + 0.114 * b).toLong()
+                
+                sumBrightness += brightness
+                sumSqBrightness += brightness * brightness
+            }
+            
+            val numPixels = (width * height).toLong()
+            val meanBrightness = sumBrightness / numPixels
+            
+            // Calculate Variance: E[X^2] - (E[X])^2
+            val meanSqBrightness = sumSqBrightness / numPixels
+            val variance = meanSqBrightness - (meanBrightness * meanBrightness)
+            
+            Log.d("CataractModel", "Image Stats - Mean Brightness: $meanBrightness, Variance: $variance")
+            
+            // 1. Check if too dark or too bright
+            // Range 0-255. < 20 is very dark, > 235 is blown out white
+            if (meanBrightness < 20 || meanBrightness > 235) {
+                Log.d("CataractModel", "Image rejected: Too dark or too bright")
+                return false
+            }
+            
+            // 2. Check variance (consistency)
+            // Solid colors will have variance ~0.
+            // Eye images typically have good contrast (pupil vs iris vs sclera).
+            // Threshold of 100 is conservative (std dev 10).
+            if (variance < 100) {
+                Log.d("CataractModel", "Image rejected: Low variance (solid color or blurred)")
+                return false
+            }
+            
+            return true
+            
+        } catch (e: Exception) {
+            Log.e("CataractModel", "Error validating image: ${e.message}")
+            return true // Fail safe: assume valid if check fails
         }
     }
     
