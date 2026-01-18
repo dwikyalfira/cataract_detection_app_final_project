@@ -46,7 +46,7 @@ fun SplashView() {
             ) {
                 Icon(
                     painter = androidx.compose.ui.res.painterResource(id = R.mipmap.ic_launcher),
-                    contentDescription = "App Logo",
+                    contentDescription = androidx.compose.ui.res.stringResource(id = R.string.app_logo),
                     modifier = Modifier.size(80.dp),
                     tint = Color.Unspecified
                 )

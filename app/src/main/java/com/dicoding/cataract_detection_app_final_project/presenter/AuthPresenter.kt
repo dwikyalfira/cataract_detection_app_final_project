@@ -205,7 +205,7 @@ class AuthPresenter(private var context: Context) {
                     if (otpDebug != null) {
                         android.util.Log.d("AuthPresenter", "OTP Debug: $otpDebug")
                     }
-                    _forgotPasswordSuccessMessage.value = "OTP sent to your email (Check logs for Dev)"
+                    _forgotPasswordSuccessMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.otp_sent_debug)
                 } else {
                     val errorMsg = body?.message ?: "Failed to send reset link"
                     _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)
@@ -237,7 +237,7 @@ class AuthPresenter(private var context: Context) {
                 _isLoading.value = false
                 val body = response.body()
                 if (response.isSuccessful && body != null && body.status == "success") {
-                    _forgotPasswordSuccessMessage.value = "Password reset successfully. Please login."
+                    _forgotPasswordSuccessMessage.value = context.getString(com.dicoding.cataract_detection_app_final_project.R.string.success_password_reset)
                 } else {
                     val errorMsg = body?.message ?: "Failed to reset password"
                     _forgotPasswordErrorMessage.value = ErrorTranslator.translateError(context, errorMsg)

@@ -127,4 +127,7 @@ dependencies {
     // Image Cropper
     implementation("com.vanniktech:android-image-cropper:4.6.0")
 
+    // ExifInterface for image orientation handling
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
 }

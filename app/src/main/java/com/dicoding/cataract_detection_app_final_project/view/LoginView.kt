@@ -144,7 +144,7 @@ fun LoginView(
                     value = email,
                     onValueChange = { email = it },
                     label = { Text(stringResource(id = R.string.email)) },
-                    placeholder = { Text("example@email.com") },
+                    placeholder = { Text(stringResource(R.string.example_email)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
@@ -173,7 +173,7 @@ fun LoginView(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text(stringResource(id = R.string.password)) },
-                    placeholder = { Text("••••••••") },
+                    placeholder = { Text(stringResource(R.string.password_placeholder)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,

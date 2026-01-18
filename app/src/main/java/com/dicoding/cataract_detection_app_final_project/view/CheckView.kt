@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -213,7 +214,7 @@ fun CheckView(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Start Analysis",
+                                contentDescription = stringResource(R.string.start_analysis),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -254,7 +255,7 @@ fun CheckView(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Image Selected",
+                                    contentDescription = stringResource(R.string.image_selected_content_desc),
                                     modifier = Modifier.size(20.dp),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
@@ -299,7 +300,7 @@ fun CheckView(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.CameraAlt,
-                                        contentDescription = "Retake Image",
+                                        contentDescription = stringResource(R.string.retake_image),
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -335,7 +336,7 @@ fun CheckView(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Image,
-                                        contentDescription = "Pick Different Image",
+                                        contentDescription = stringResource(R.string.pick_different_image),
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -383,7 +384,7 @@ fun CheckView(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Crop,
-                                    contentDescription = "Adjust Image",
+                                    contentDescription = stringResource(R.string.adjust_image),
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -414,7 +415,7 @@ fun CheckView(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Image Preview",
+                        contentDescription = stringResource(R.string.image_preview),
                             modifier = Modifier.size(72.dp),
                             tint = MaterialTheme.colorScheme.primary
                     )
@@ -507,6 +508,35 @@ fun CheckView(
                     text = stringResource(R.string.check_tips),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+        
+        // Medical Disclaimer Warning Card
+        androidx.compose.material3.ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Text(
+                    text = "⚠️ ${stringResource(R.string.important_note)}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.analysis_disclaimer),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer
                 )
             }
         }

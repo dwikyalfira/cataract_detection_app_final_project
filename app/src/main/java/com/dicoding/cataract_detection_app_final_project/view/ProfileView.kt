@@ -341,7 +341,7 @@ fun ProfileView(
                 }
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Navigate to history",
+                    contentDescription = stringResource(R.string.navigate_to_history),
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )

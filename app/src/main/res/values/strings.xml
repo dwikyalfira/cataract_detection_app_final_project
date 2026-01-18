@@ -141,7 +141,7 @@
     <string name="treatment_options">Treatment Options</string>
     <string name="treatment_content">Cataract surgery is one of the most common and successful procedures performed today. The surgery involves removing the clouded lens and replacing it with a clear artificial lens.\n\nEarly detection through regular eye exams is key to successful treatment and maintaining good vision.</string>
     <string name="about_this_app">About This App</string>
-    <string name="app_description">This app uses AI technology to help detect potential cataracts in eye images. Use the \'Check\' tab to analyze images, and visit your \'Profile\' for personal statistics and information.\n\nRemember: This app is for informational purposes only and should not replace professional medical advice.</string>
+    <string name="app_description">This app uses AI technology to help detect potential cataracts in eye images. Use the \'Check\' tab to analyze images, and visit your \'Profile\' for personal statistics and information.</string>
     
     <!-- Check Page -->
     <string name="how_to_use">How to use:</string>
@@ -221,4 +221,53 @@
     <string name="start_analysis">Start Analysis</string>
     <string name="back_to_home">Back to Home</string>
     <string name="analysis_summary">Analysis Summary</string>
+    
+    <!-- Image Processing Breakdown -->
+    <string name="image_breakdown">Image Breakdown</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
+    <string name="raw_output">Raw Output</string>
+    <string name="raw_output_desc">Model confidence value (0 = Cataract, 1 = Normal)</string>
+    <string name="brightness">Mean Brightness</string>
+    <string name="brightness_desc">Average brightness level (0-255)</string>
+    <string name="variance">Variance</string>
+    <string name="variance_desc">Image contrast measure (higher = more detail)</string>
+    <string name="edge_density">Edge Density</string>
+    <string name="edge_density_desc">Amount of edges detected in the image</string>
+
+    <!-- Accessibility & Placeholders -->
+    <string name="example_email">example@email.com</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="app_logo">App Logo</string>
+    <string name="zoom_out">Zoom Out</string>
+    <string name="zoom_in">Zoom In</string>
+    <string name="scanned_eye_image">Scanned Eye Image</string>
+    <string name="navigate_to_history">Navigate to history</string>
+    <string name="info">Info</string>
+    <string name="learn_more">Learn more</string>
+    <string name="cataract_vs_normal">Cataract vs Normal Eye</string>
+    <string name="full_screen_image">Full Screen Image</string>
+    <string name="illustration">Illustration</string>
+    <string name="image_selected_content_desc">Image Selected</string>
+
+    <!-- Auth Messages -->
+    <string name="otp_sent_debug">OTP sent to your email (Check logs for Dev)</string>
+    <string name="success_password_reset">Password reset successfully. Please login.</string>
+    <string name="success_password_changed">Password changed successfully</string>
+    <string name="error_change_password_failed">Failed to change password</string>
+    <string name="error_reset_password_failed">Failed to reset password</string>
+
+    <!-- Info View Content -->
+    <string name="about_cataract">About Cataract</string>
+    <string name="info_what_is_title">What is Cataract?</string>
+    <string name="info_what_is_content">A cataract is a clouding of the normally clear lens of the eye. For people who have cataracts, seeing through cloudy lenses is a bit like looking through a frosty or fogged-up window. Clouded vision caused by cataracts can make it more difficult to read, drive a car (especially at night) or see the expression on a friend\'s face.</string>
+    <string name="info_symptoms_title">Common Symptoms</string>
+    <string name="info_symptoms_content">• Clouded, blurred or dim vision\n• Increasing difficulty with vision at night\n• Sensitivity to light and glare\n• Need for brighter light for reading and other activities\n• Seeing \'halos\' around lights\n• Frequent changes in eyeglass or contact lens prescription\n• Fading or yellowing of colors\n• Double vision in a single eye</string>
+    <string name="info_prevention_title">Prevention</string>
+    <string name="info_prevention_content">• Have regular eye examinations\n• Quit smoking\n• Take care of other health problems\n• Choose a healthy diet that includes plenty of fruits and vegetables\n• Wear sunglasses that block ultraviolet B (UVB) rays\n• Reduce alcohol use\n• Maintain a healthy weight</string>
+    <string name="info_risk_factors_title">Risk Factors</string>
+    <string name="info_risk_factors_content">• Increasing age\n• Diabetes\n• Excessive exposure to sunlight\n• Smoking\n• Obesity\n• High blood pressure\n• Previous eye injury or inflammation\n• Previous eye surgery\n• Prolonged use of corticosteroid medications\n• Drinking excessive amounts of alcohol</string>
+    <string name="info_treatment_title">Treatment</string>
+    <string name="info_treatment_content">When your prescription glasses can\'t clear your vision, the only effective treatment for cataracts is surgery. Cataract surgery involves removing the clouded lens and replacing it with a clear artificial lens. The artificial lens, called an intraocular lens, is positioned in the same place as your natural lens. It remains a permanent part of your eye.</string>
+    <string name="back_to_home">Back to Home</string>
 </resources>

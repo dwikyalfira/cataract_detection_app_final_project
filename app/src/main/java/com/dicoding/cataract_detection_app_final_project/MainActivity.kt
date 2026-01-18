@@ -686,6 +686,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         confidenceScore = presenter.confidenceScore.value,
                         scannedImageUri = presenter.scannedImageUri.value,
                         isNavigating = presenter.isNavigating.value,
+                        processingDetails = presenter.processingDetails.value,
                         onBackToHome = { 
                             navController.navigate(NavigationItem.Home.route) {
                                 popUpTo("result") { inclusive = true }

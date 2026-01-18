@@ -264,7 +264,7 @@ fun ROIView(
                 ) {
                     Icon(
                         Icons.Filled.ZoomOut, 
-                        contentDescription = "Zoom Out",
+                        contentDescription = stringResource(R.string.zoom_out),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -280,7 +280,7 @@ fun ROIView(
                 ) {
                     Icon(
                         Icons.Filled.ZoomIn, 
-                        contentDescription = "Zoom In",
+                        contentDescription = stringResource(R.string.zoom_in),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }

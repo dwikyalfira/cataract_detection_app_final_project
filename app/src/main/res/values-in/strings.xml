@@ -142,7 +142,7 @@
     <string name="treatment_options">Opsi Perawatan</string>
     <string name="treatment_content">Operasi katarak adalah salah satu prosedur paling umum dan berhasil yang dilakukan saat ini. Operasi melibatkan pengangkatan lensa yang keruh dan menggantinya dengan lensa buatan yang jernih.\n\nDeteksi dini melalui pemeriksaan mata rutin adalah kunci untuk perawatan yang berhasil dan mempertahankan penglihatan yang baik.</string>
     <string name="about_this_app">Tentang Aplikasi Ini</string>
-    <string name="app_description">Aplikasi ini menggunakan teknologi AI untuk membantu mendeteksi potensi katarak dalam gambar mata. Gunakan tab \'Periksa\' untuk menganalisis gambar, dan kunjungi \'Profil\' Anda untuk statistik dan informasi pribadi.\n\nIngat: Aplikasi ini hanya untuk tujuan informasi dan tidak boleh menggantikan saran medis profesional.</string>
+    <string name="app_description">Aplikasi ini menggunakan teknologi AI untuk membantu mendeteksi potensi katarak dalam gambar mata. Gunakan tab \'Periksa\' untuk menganalisis gambar, dan kunjungi \'Profil\' Anda untuk statistik dan informasi pribadi.</string>
 
     <!-- Check Page -->
     <string name="how_to_use">Cara menggunakan:</string>
@@ -222,4 +222,53 @@
     <string name="start_analysis">Mulai Analisis</string>
     <string name="back_to_home">Kembali ke Beranda</string>
     <string name="analysis_summary">Hasil Analisis</string>
+    
+    <!-- Image Processing Breakdown -->
+    <string name="image_breakdown">Rincian Gambar</string>
+    <string name="expand">Buka</string>
+    <string name="collapse">Tutup</string>
+    <string name="raw_output">Nilai Mentah</string>
+    <string name="raw_output_desc">Nilai kepercayaan model (0 = Katarak, 1 = Normal)</string>
+    <string name="brightness">Kecerahan Rata-rata</string>
+    <string name="brightness_desc">Tingkat kecerahan rata-rata (0-255)</string>
+    <string name="variance">Variansi</string>
+    <string name="variance_desc">Ukuran kontras gambar (semakin tinggi = lebih detail)</string>
+    <string name="edge_density">Kepadatan Tepi</string>
+    <string name="edge_density_desc">Jumlah tepi yang terdeteksi dalam gambar</string>
+
+    <!-- Accessibility & Placeholders -->
+    <string name="example_email">contoh@email.com</string>
+    <string name="password_placeholder">••••••••</string>
+    <string name="app_logo">Logo Aplikasi</string>
+    <string name="zoom_out">Perkecil</string>
+    <string name="zoom_in">Perbesar</string>
+    <string name="scanned_eye_image">Gambar Mata yang Dipindai</string>
+    <string name="navigate_to_history">Navigasi ke riwayat</string>
+    <string name="info">Info</string>
+    <string name="learn_more">Pelajari lebih lanjut</string>
+    <string name="cataract_vs_normal">Katarak vs Mata Normal</string>
+    <string name="full_screen_image">Gambar Layar Penuh</string>
+    <string name="illustration">Ilustrasi</string>
+    <string name="image_selected_content_desc">Gambar Terpilih</string>
+
+    <!-- Auth Messages -->
+    <string name="otp_sent_debug">OTP dikirim ke email Anda (Cek log untuk Dev)</string>
+    <string name="success_password_reset">Kata sandi berhasil direset. Silakan masuk.</string>
+    <string name="success_password_changed">Kata sandi berhasil diubah</string>
+    <string name="error_change_password_failed">Gagal mengubah kata sandi</string>
+    <string name="error_reset_password_failed">Gagal mereset kata sandi</string>
+
+    <!-- Info View Content -->
+    <string name="about_cataract">Tentang Katarak</string>
+    <string name="info_what_is_title">Apa itu Katarak?</string>
+    <string name="info_what_is_content">Katarak adalah kekeruhan pada lensa alami mata. Bagi penderita katarak, melihat melalui lensa yang keruh seperti melihat melalui jendela yang berembun atau berkabut. Penglihatan keruh akibat katarak dapat menyulitkan saat membaca, mengemudi (terutama di malam hari), atau melihat ekspresi wajah teman.</string>
+    <string name="info_symptoms_title">Gejala Umum</string>
+    <string name="info_symptoms_content">• Penglihatan keruh, kabur, atau redup\n• Meningkatnya kesulitan melihat di malam hari\n• Sensitivitas terhadap cahaya dan silau\n• Membutuhkan cahaya yang lebih terang untuk membaca\n• Melihat \'lingkaran cahaya\' di sekitar lampu\n• Sering mengganti resep kacamata atau lensa kontak\n• Warna tampak memudar atau menguning\n• Penglihatan ganda pada satu mata</string>
+    <string name="info_prevention_title">Pencegahan</string>
+    <string name="info_prevention_content">• Lakukan pemeriksaan mata secara teratur\n• Berhenti merokok\n• Atasi masalah kesehatan lainnya\n• Pilih makanan sehat yang kaya buah dan sayuran\n• Gunakan kacamata hitam yang memblokir sinar ultraviolet B (UVB)\n• Kurangi konsumsi alkohol\n• Jaga berat badan yang sehat</string>
+    <string name="info_risk_factors_title">Faktor Risiko</string>
+    <string name="info_risk_factors_content">• Bertambahnya usia\n• Diabetes\n• Paparan sinar matahari berlebihan\n• Merokok\n• Obesitas\n• Tekanan darah tinggi\n• Cedera atau peradangan mata sebelumnya\n• Operasi mata sebelumnya\n• Penggunaan obat kortikosteroid jangka panjang\n• Minum alkohol berlebihan</string>
+    <string name="info_treatment_title">Pengobatan</string>
+    <string name="info_treatment_content">Ketika kacamata resep tidak lagi dapat menjernihkan penglihatan Anda, satu-satunya pengobatan efektif untuk katarak adalah operasi. Operasi katarak melibatkan pengangkatan lensa yang keruh dan menggantinya dengan lensa buatan yang jernih. Lensa buatan ini, yang disebut lensa intraokular, diposisikan di tempat yang sama dengan lensa alami Anda. Lensa ini menjadi bagian permanen dari mata Anda.</string>
+    <string name="back_to_home">Kembali ke Beranda</string>
 </resources>

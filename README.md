@@ -1,22 +1,24 @@
-# Cataract Detector App
+# Cataract Detector App (KataMata)
 
 A modern Android application built with Kotlin and Jetpack Compose for AI-powered cataract detection using CNN (Convolutional Neural Network).
 
 ## 🚀 Features
 
-### Current Implementation (UI Only)
-- **Splash Screen**: Beautiful welcome screen with app logo and branding
-- **Home Screen**: Main interface with image upload/capture functionality
-- **Result Screen**: Displays detection results with confidence scores
-- **Info Screen**: Comprehensive information about cataracts
-- **Profile Screen**: User profile and app statistics
+### Core Functionality
+- **AI Analysis**: Real-time cataract detection using a TensorFlow Lite CNN model (`MobileNetV2`).
+- **Image Processing**: Advanced image checks for brightness, variance, and edge density to ensure quality analysis.
+- **Localization**: Full support for **English** and **Indonesian** languages.
+- **User Authentication**: Secure Login and Registration system with session management.
+- **History Tracking**: Saves analysis results locally for future reference.
 
-### Planned Features (Future Implementation)
-- CNN model integration for actual cataract detection
-- Real image processing and analysis
-- Cloud-based model updates
-- User history and tracking
-- Export and sharing capabilities
+### UI/UX
+- **Splash Screen**: Animated welcome screen with app branding.
+- **Authentication**: Modern Login and Registration screens with validation and error handling.
+- **Home Screen**: Intuitive dashboard for starting new checks or viewing info.
+- **Check Screen**: Interactive camera capture and image selection with ROI (Region of Interest) adjustment.
+- **Result Screen**: Detailed analysis results with confidence scores, image breakdown, and medical disclaimers.
+- **Profile Screen**: User profile management, statistics, and history access.
+- **Info Hub**: Educational resources about cataract symptoms, prevention, and treatment.
 
 ## 🏗️ Architecture
 
@@ -24,191 +26,117 @@ This project follows the **MVP (Model-View-Presenter)** architecture pattern:
 
 ```
 app/src/main/java/com/dicoding/cataract_detection_app_final_project/
+├── data/                     # Data layer (API, Session, Local Storage)
+│   ├── api/                  # Retrofit services and response models
+│   └── ...
 ├── model/
-│   └── CataractModel.kt          # Placeholder for CNN model
+│   └── CataractModel.kt      # TFLite Model integration & Image Processing
 ├── presenter/
-│   └── MainPresenter.kt          # Business logic and navigation
+│   ├── AuthPresenter.kt      # Authentication logic
+│   ├── HistoryPresenter.kt   # History management
+│   └── MainPresenter.kt      # Core app logic
 ├── view/
-│   ├── SplashView.kt             # Splash screen UI
-│   ├── HomeView.kt               # Main home screen UI
-│   ├── ResultView.kt             # Results display UI
-│   ├── InfoView.kt               # Information screen UI
-│   └── ProfileView.kt            # Profile screen UI
-├── ui/theme/
-│   ├── Color.kt                  # Color definitions
-│   ├── Theme.kt                  # Material 3 theme
-│   └── Type.kt                   # Typography definitions
-└── MainActivity.kt               # Main activity with navigation
+│   ├── LoginView.kt          # Login UI
+│   ├── HomeView.kt           # Dashboard UI
+│   ├── CheckView.kt          # Image capture & analysis UI
+│   ├── ResultView.kt         # Results & Breakdown UI
+│   └── ...
+├── utils/
+│   └── ErrorTranslator.kt    # Localization & Error handling
+└── MainActivity.kt           # Entry point
 ```
 
 ## 🎨 Design System
 
-- **Material 3 (Material You)**: Modern design system
-- **Primary Color**: Blue (#1976D2)
-- **Typography**: Material 3 typography scale
-- **Icons**: Material Design icons
-- **Cards**: Rounded corners with elevation
-- **Responsive**: Adapts to different screen sizes
+- **Material 3**: Modern, accessible design components.
+- **Theming**: Custom color palette (Primary Blue #1976D2) with support for Light/Dark modes.
+- **Typography**: Complete Material 3 type scale.
+- **Adaptive**: Responsive layouts for various screen sizes.
+
+## �️ Technical Stack
+
+- **Language**: Kotlin
+- **UI**: Jetpack Compose
+- **Architecture**: MVP
+- **ML/AI**: TensorFlow Lite (MobileNetV2)
+- **Networking**: Retrofit, OkHttp
+- **Image Loading**: Coil
+- **Async**: Coroutines
 
 ## 📱 Screens
 
-### 1. Splash Screen
-- App logo with eye icon
-- App name: "Cataract Detector"
-- Blue background (#1976D2)
-- Auto-navigation to Home after 2.5 seconds
+### 1. Authentication
+- **Login/Register**: Secure access with email/password.
+- **Password Recovery**: Forgot password functionality.
 
-### 2. Home Screen
-- Title and image preview area
-- Upload Image button (dummy)
-- Capture Image button (dummy)
-- Navigation to Info and Profile screens
-- Loading indicator during processing
+### 2. Dashboard (Home)
+- Quick access to Analysis, Info, and Profile.
+- "Cataract vs Normal" visual comparison.
 
-### 3. Result Screen
-- Dummy analyzed image display
-- Prediction result with color coding
-- Confidence score display
-- Analysis summary
-- Back to Home navigation
+### 3. Check & Analysis
+- **Camera/Gallery**: Capture or pick images.
+- **ROI Selection**: Crop and focus on the eye area.
+- **Breakdown**: View technical metrics (Brightness, Variance, Edge Density).
 
-### 4. Info Screen
-- Comprehensive cataract information
-- Scrollable content sections:
-  - What is cataract?
-  - Common symptoms
-  - Prevention tips
-  - Risk factors
-  - Treatment options
+### 4. Results
+- **Diagnosis**: Normal, Cataract, or Unknown.
+- **Confidence**: Probability percentage of the prediction.
+- **Disclaimer**: Medical warning cards detailed advice.
 
-### 5. Profile Screen
-- User profile picture (circular)
-- User information (name, email, etc.)
-- App statistics (scans, healthy results, alerts)
-- Back to Home navigation
-
-## 🛠️ Technical Stack
-
-- **Language**: Kotlin
-- **UI Framework**: Jetpack Compose
-- **Architecture**: MVP (Model-View-Presenter)
-- **Navigation**: Custom state-based navigation
-- **Theme**: Material 3
-- **Icons**: Material Design Icons
-- **Build System**: Gradle with Kotlin DSL
+### 5. Profile & History
+- Manage account settings.
+- View past analysis records with ability to delete entries.
+- Change app language (English/Indonesian).
 
 ## 📋 Requirements
 
 - Android Studio Hedgehog | 2023.1.1 or later
 - Minimum SDK: 24 (Android 7.0)
-- Target SDK: 36 (Android 14)
-- Java 11 or later
-- Kotlin 2.0.21
+- Target SDK: 34 (Android 14)
+- Java 17
+- Kotlin 2.0+
 
 ## 🚀 Getting Started
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd cataract_detection_app_final_project
    ```
 
 2. **Open in Android Studio**
-   - Open Android Studio
-   - Select "Open an existing project"
-   - Navigate to the project directory
-   - Click "OK"
+   - Import the project and wait for Gradle sync.
 
-3. **Sync and Build**
-   - Wait for Gradle sync to complete
-   - Build the project (Build → Make Project)
-   - Run on an emulator or physical device
+3. *(Optional)* **Configure Backend**
+   - Ensure the local PHP backend is running (if testing Auth).
+   - Update `ApiService.kt` base URL if needed.
 
-4. **Run the App**
-   - Click the "Run" button (green play icon)
-   - Select your target device
-   - The app will install and launch
+4. **Build and Run**
+   - Run on an emulator or physical device.
 
-## 🔧 Dependencies
-
-The project uses the following key dependencies:
+## 🔧 Key Dependencies
 
 ```kotlin
-// Core Android
-implementation(libs.androidx.core.ktx)
-implementation(libs.androidx.lifecycle.runtime.ktx)
-implementation(libs.androidx.activity.compose)
-
-// Compose
+// UI
 implementation(platform(libs.androidx.compose.bom))
-implementation(libs.androidx.ui)
-implementation(libs.androidx.ui.graphics)
-implementation(libs.androidx.ui.tooling.preview)
 implementation(libs.androidx.material3)
+implementation(libs.coil.compose)
 
-// Navigation
-implementation(libs.androidx.navigation.compose)
-```
+// Network
+implementation(libs.retrofit)
+implementation(libs.converter.gson)
 
-## 🎯 Navigation Flow
-
-```
-Splash Screen (2.5s)
-    ↓
-Home Screen
-    ↓
-├── Upload/Capture Image → Result Screen → Home
-├── Info Button → Info Screen → Home
-└── Profile Button → Profile Screen → Home
+// ML
+implementation(libs.tensorflow.lite)
+implementation(libs.tensorflow.lite.support)
 ```
 
 ## 🔮 Future Enhancements
 
-### Phase 1: CNN Integration
-- [ ] Integrate TensorFlow Lite
-- [ ] Implement actual image processing
-- [ ] Add model loading and inference
-- [ ] Real-time camera integration
-
-### Phase 2: Advanced Features
-- [ ] User authentication
-- [ ] Cloud storage for results
-- [ ] Export functionality
-- [ ] Sharing capabilities
-- [ ] Offline mode
-
-### Phase 3: Analytics & ML
-- [ ] Usage analytics
-- [ ] Model performance tracking
-- [ ] A/B testing for UI improvements
-- [ ] Personalized recommendations
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- [ ] Cloud syncing for history data.
+- [ ] Export results to PDF.
+- [ ] Dark mode toggle in Settings.
+- [ ] Multiple eye condition detection.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Team
-
-- **Developer**: [Your Name]
-- **Project**: Final Project for Android Development Course
-- **Institution**: Dicoding Indonesia
-
-## 📞 Support
-
-For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation
-
----
-
-**Note**: This is currently a UI prototype. The CNN model integration will be implemented in future phases.
-
+This project is licensed under the MIT License.

@@ -67,7 +67,7 @@ private fun InfoCard(
                 Spacer(modifier = Modifier.height(12.dp))
                 Image(
                     painter = painterResource(id = imageResId),
-                    contentDescription = "Illustration",
+                    contentDescription = stringResource(R.string.illustration),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)

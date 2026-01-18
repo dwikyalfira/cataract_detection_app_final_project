@@ -64,13 +64,13 @@ fun InfoView(
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Info",
+                    contentDescription = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info),
                     tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "About Cataract",
+                    text = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.about_cataract),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -88,67 +88,37 @@ fun InfoView(
         ) {
             // What is Cataract
             InfoSection(
-                title = "What is Cataract?",
+                title = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_what_is_title),
                 icon = Icons.Default.Info,
-                content = "A cataract is a clouding of the normally clear lens of the eye. " +
-                        "For people who have cataracts, seeing through cloudy lenses is a bit like " +
-                        "looking through a frosty or fogged-up window. Clouded vision caused by " +
-                        "cataracts can make it more difficult to read, drive a car (especially at night) " +
-                        "or see the expression on a friend's face."
+                content = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_what_is_content)
             )
             
             // Common Symptoms
             InfoSection(
-                title = "Common Symptoms",
+                title = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_symptoms_title),
                 icon = Icons.Default.Warning,
-                content = "• Clouded, blurred or dim vision\n" +
-                        "• Increasing difficulty with vision at night\n" +
-                        "• Sensitivity to light and glare\n" +
-                        "• Need for brighter light for reading and other activities\n" +
-                        "• Seeing 'halos' around lights\n" +
-                        "• Frequent changes in eyeglass or contact lens prescription\n" +
-                        "• Fading or yellowing of colors\n" +
-                        "• Double vision in a single eye"
+                content = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_symptoms_content)
             )
             
             // Prevention
             InfoSection(
-                title = "Prevention",
+                title = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_prevention_title),
                 icon = Icons.Default.Info,
-                content = "• Have regular eye examinations\n" +
-                        "• Quit smoking\n" +
-                        "• Take care of other health problems\n" +
-                        "• Choose a healthy diet that includes plenty of fruits and vegetables\n" +
-                        "• Wear sunglasses that block ultraviolet B (UVB) rays\n" +
-                        "• Reduce alcohol use\n" +
-                        "• Maintain a healthy weight"
+                content = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_prevention_content)
             )
             
             // Risk Factors
             InfoSection(
-                title = "Risk Factors",
+                title = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_risk_factors_title),
                 icon = Icons.Default.Person,
-                content = "• Increasing age\n" +
-                        "• Diabetes\n" +
-                        "• Excessive exposure to sunlight\n" +
-                        "• Smoking\n" +
-                        "• Obesity\n" +
-                        "• High blood pressure\n" +
-                        "• Previous eye injury or inflammation\n" +
-                        "• Previous eye surgery\n" +
-                        "• Prolonged use of corticosteroid medications\n" +
-                        "• Drinking excessive amounts of alcohol"
+                content = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_risk_factors_content)
             )
             
             // Treatment
             InfoSection(
-                title = "Treatment",
+                title = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_treatment_title),
                 icon = Icons.Default.Info,
-                content = "When your prescription glasses can't clear your vision, the only " +
-                        "effective treatment for cataracts is surgery. Cataract surgery involves " +
-                        "removing the clouded lens and replacing it with a clear artificial lens. " +
-                        "The artificial lens, called an intraocular lens, is positioned in the same " +
-                        "place as your natural lens. It remains a permanent part of your eye."
+                content = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.info_treatment_content)
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -166,11 +136,11 @@ fun InfoView(
         ) {
             Icon(
                 imageVector = Icons.Default.Home,
-                contentDescription = "Home",
+                contentDescription = androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.home),
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Back to Home")
+            Text(androidx.compose.ui.res.stringResource(com.dicoding.cataract_detection_app_final_project.R.string.back_to_home))
         }
     }
 }

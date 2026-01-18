@@ -8,7 +8,12 @@ data class AnalysisHistory(
     val predictionResult: String = "",
     val confidence: Float = 0f,
     val timestamp: Long = System.currentTimeMillis(),
-    val userId: String = ""
+    val userId: String = "",
+    // Image processing details for breakdown display
+    val rawOutput: Float = 0f,
+    val meanBrightness: Float = 0f,
+    val variance: Float = 0f,
+    val edgeDensity: Float = 0f
 ) {
     fun getFormattedDate(): String {
         val date = Date(timestamp)

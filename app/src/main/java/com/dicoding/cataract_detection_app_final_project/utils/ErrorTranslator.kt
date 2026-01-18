@@ -143,6 +143,16 @@ object ErrorTranslator {
                 context.getString(R.string.error_logout_failed)
             "Password reset email sent" -> 
                 context.getString(R.string.success_password_reset_sent)
+            "Invalid password" -> 
+                context.getString(R.string.error_wrong_password)
+            "Password changed successfully" ->
+                context.getString(R.string.success_password_changed)
+            "Failed to change password" ->
+                context.getString(R.string.error_change_password_failed)
+            "Failed to reset password" ->
+                context.getString(R.string.error_reset_password_failed)
+            "Account deleted successfully" ->
+                context.getString(R.string.account_deleted_successfully)
             else -> errorMessage
         }
     }

@@ -6,8 +6,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.dicoding.cataract_detection_app_final_project.data.AnalysisHistory
 import com.dicoding.cataract_detection_app_final_project.model.CataractModel
+import com.dicoding.cataract_detection_app_final_project.model.ImageProcessingDetails
 import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
-import com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager
 import com.dicoding.cataract_detection_app_final_project.utils.ImageCropper
 import com.dicoding.cataract_detection_app_final_project.view.ROIRect
 import com.dicoding.cataract_detection_app_final_project.view.ImageAdjustments
@@ -23,7 +23,6 @@ class MainPresenter {
     
     private var cataractModel: CataractModel? = null
     private var historyRepository: HistoryRepository? = null
-    private var imageStorageManager: ImageStorageManager? = null
     private var imageCropper: ImageCropper? = null
     private var currentUserId: String = ""
     private var context: Context? = null
@@ -37,6 +36,9 @@ class MainPresenter {
     
     private val _confidenceScore = mutableStateOf(0.0f)
     val confidenceScore: State<Float> = _confidenceScore
+    
+    private val _processingDetails = mutableStateOf(ImageProcessingDetails())
+    val processingDetails: State<ImageProcessingDetails> = _processingDetails
     
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
@@ -81,7 +83,6 @@ class MainPresenter {
     fun initializeHistory(context: Context, userId: String) {
         this.context = context
         this.historyRepository = HistoryRepository(context)
-        this.imageStorageManager = ImageStorageManager(context)
         this.imageCropper = ImageCropper(context)
         this.currentUserId = userId
         this.cataractModel = CataractModel(context)
@@ -187,12 +188,14 @@ class MainPresenter {
     
     /**
      * Proceed with the selected image for processing
+     * This is called when user clicks "Start Analysis" button
+     * It directly runs analysis since image was already adjusted via ROI
      */
     fun onProceedWithImage() {
         val imageUri = _selectedImageUri.value
         if (imageUri != null) {
-            // Navigate to ROI adjustment instead of direct analysis
-            onAdjustROI()
+            // Directly proceed with analysis - the image is already ready
+            proceedWithAnalysis(imageUri)
         } else {
             android.util.Log.e("MainPresenter", "Cannot proceed - no image selected")
         }
@@ -217,34 +220,30 @@ class MainPresenter {
                     val uri = Uri.parse(imageUri)
                     val result = cataractModel!!.predictCataract(uri)
                     val confidence = cataractModel!!.getConfidenceScore()
+                    val details = cataractModel!!.getProcessingDetails()
                     
                     android.util.Log.d("MainPresenter", "Inference complete - Result: $result, Confidence: $confidence")
                     
-                    // Copy image to internal storage for persistence
-                    val persistentImageUri = try {
-                        imageStorageManager?.copyImageToInternalStorage(uri) ?: imageUri
-                    } catch (e: Exception) {
-                        android.util.Log.e("MainPresenter", "Failed to copy image to internal storage", e)
-                        // If we can't copy the image to internal storage, we should not save it to history
-                        // as it will become inaccessible later. Instead, we'll show an error.
-                        throw Exception("Failed to save image for analysis history: ${e.message}")
+                    // Save to server (HistoryRepository handles compression and upload)
+                    historyRepository?.let { repo ->
+                        val history = AnalysisHistory(
+                            imageUri = imageUri, // Pass original URI, repository will handle upload
+                            predictionResult = result,
+                            confidence = confidence,
+                            userId = currentUserId,
+                            rawOutput = details.rawOutput,
+                            meanBrightness = details.meanBrightness,
+                            variance = details.variance,
+                            edgeDensity = details.edgeDensity
+                        )
+                        repo.saveAnalysisHistory(history)
                     }
                     
                     // Switch back to main thread for UI updates
                     CoroutineScope(Dispatchers.Main).launch {
                         _predictionResult.value = result
                         _confidenceScore.value = confidence
-                        
-                        // Save to history if repository is initialized
-                        historyRepository?.let { repo ->
-                            val history = AnalysisHistory(
-                                imageUri = persistentImageUri,
-                                predictionResult = result,
-                                confidence = confidence,
-                                userId = currentUserId
-                            )
-                            repo.saveAnalysisHistory(history)
-                        }
+                        _processingDetails.value = details
                         
                         // Notify analysis complete (Normal = healthy, Cataract = not healthy)
                         // Only update stats for valid predictions
@@ -287,6 +286,7 @@ class MainPresenter {
         _scannedImageUri.value = null
         _predictionResult.value = ""
         _confidenceScore.value = 0.0f
+        _processingDetails.value = ImageProcessingDetails()
         _isLoading.value = false
         _isFromHistory.value = false
         _currentHistoryForViewing.value = null

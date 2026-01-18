@@ -1,9 +1,14 @@
 package com.dicoding.cataract_detection_app_final_project.view
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,18 +16,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dicoding.cataract_detection_app_final_project.R
+import com.dicoding.cataract_detection_app_final_project.model.ImageProcessingDetails
 
 @Composable
 fun ResultView(
@@ -43,6 +58,7 @@ fun ResultView(
     confidenceScore: Float = 0.85f,
     scannedImageUri: String? = null,
     isNavigating: Boolean = false,
+    processingDetails: ImageProcessingDetails = ImageProcessingDetails(),
     onBackToHome: () -> Unit = {},
     onTryAnotherImage: () -> Unit = {}
 ) {
@@ -50,6 +66,10 @@ fun ResultView(
     if ((predictionResult.isEmpty() && scannedImageUri == null) || isNavigating) {
         return
     }
+    
+    var isBreakdownExpanded by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,7 +77,7 @@ fun ResultView(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Result Card Container (Centered)
+        // Result Card Container (Scrollable)
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -75,7 +95,9 @@ fun ResultView(
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Scanned Image Display
@@ -91,7 +113,7 @@ fun ResultView(
                                     .data(scannedImageUri)
                                     .crossfade(true)
                                     .build(),
-                                contentDescription = "Scanned Eye Image",
+                                contentDescription = stringResource(R.string.scanned_eye_image),
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
                             )
@@ -179,6 +201,130 @@ fun ResultView(
                             )
                         }
                     }
+                    
+
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Image Processing Breakdown (Expandable)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { isBreakdownExpanded = !isBreakdownExpanded },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            // Header with expand/collapse icon
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.image_breakdown),
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Icon(
+                                    imageVector = if (isBreakdownExpanded) 
+                                        Icons.Default.KeyboardArrowUp 
+                                    else 
+                                        Icons.Default.KeyboardArrowDown,
+                                    contentDescription = if (isBreakdownExpanded) 
+                                        stringResource(R.string.collapse) 
+                                    else 
+                                        stringResource(R.string.expand),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            
+                            // Expandable content
+                            AnimatedVisibility(
+                                visible = isBreakdownExpanded,
+                                enter = expandVertically(),
+                                exit = shrinkVertically()
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(top = 12.dp)
+                                ) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(bottom = 12.dp),
+                                        color = MaterialTheme.colorScheme.outlineVariant
+                                    )
+                                    
+                                    // Raw Output
+                                    BreakdownItem(
+                                        label = stringResource(R.string.raw_output),
+                                        value = String.format("%.4f", processingDetails.rawOutput),
+                                        description = stringResource(R.string.raw_output_desc)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    
+                                    // Mean Brightness
+                                    BreakdownItem(
+                                        label = stringResource(R.string.brightness),
+                                        value = String.format("%.1f", processingDetails.meanBrightness),
+                                        description = stringResource(R.string.brightness_desc)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    
+                                    // Variance
+                                    BreakdownItem(
+                                        label = stringResource(R.string.variance),
+                                        value = String.format("%.1f", processingDetails.variance),
+                                        description = stringResource(R.string.variance_desc)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    
+                                    // Edge Density
+                                    BreakdownItem(
+                                        label = stringResource(R.string.edge_density),
+                                        value = String.format("%.2f", processingDetails.edgeDensity),
+                                        description = stringResource(R.string.edge_density_desc)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Medical Disclaimer Warning
+                    androidx.compose.material3.ElevatedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            Text(
+                                text = "⚠️ ${stringResource(R.string.important_note)}",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = stringResource(R.string.analysis_disclaimer),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -213,8 +359,45 @@ fun ResultView(
     }
 }
 
+@Composable
+private fun BreakdownItem(
+    label: String,
+    value: String,
+    description: String
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp)
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun ResultViewPreview() {
     ResultView()
 }
+

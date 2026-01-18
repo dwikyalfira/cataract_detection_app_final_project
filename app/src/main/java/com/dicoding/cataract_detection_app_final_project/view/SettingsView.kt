@@ -1,9 +1,9 @@
 package com.dicoding.cataract_detection_app_final_project.view
 
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -39,18 +38,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -61,20 +57,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import android.widget.Toast
+import androidx.compose.ui.unit.sp
+import androidx.core.os.LocaleListCompat
 import com.dicoding.cataract_detection_app_final_project.R
 import com.dicoding.cataract_detection_app_final_project.data.UserPreferences
 import com.dicoding.cataract_detection_app_final_project.presenter.AuthPresenter
 import kotlinx.coroutines.launch
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
-import androidx.core.os.LocaleListCompat
 import java.util.Locale
 
 // Flag Emojis
@@ -170,7 +167,7 @@ fun SettingsView(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 24.dp),
+                    .padding(vertical = 4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -304,7 +301,7 @@ fun SettingsView(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
-                                contentDescription = "Change Password",
+                                contentDescription = stringResource(id = R.string.change_password),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -337,7 +334,7 @@ fun SettingsView(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete Account",
+                                contentDescription = stringResource(id = R.string.delete_account),
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.onErrorContainer
                             )
@@ -403,7 +400,7 @@ fun SettingsView(
                                 IconButton(onClick = { showCurrentPassword = !showCurrentPassword }) {
                                     Icon(
                                         imageVector = if (showCurrentPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = if (showCurrentPassword) "Hide password" else "Show password"
+                                        contentDescription = if (showCurrentPassword) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                                     )
                                 }
                             },
@@ -425,7 +422,7 @@ fun SettingsView(
                                 IconButton(onClick = { showNewPassword = !showNewPassword }) {
                                     Icon(
                                         imageVector = if (showNewPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = if (showNewPassword) "Hide password" else "Show password"
+                                        contentDescription = if (showNewPassword) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                                     )
                                 }
                             },
@@ -447,7 +444,7 @@ fun SettingsView(
                                 IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
                                     Icon(
                                         imageVector = if (showConfirmPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = if (showConfirmPassword) "Hide password" else "Show password"
+                                        contentDescription = if (showConfirmPassword) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                                     )
                                 }
                             },
@@ -561,7 +558,7 @@ fun SettingsView(
                                 IconButton(onClick = { showDeleteAccountPassword = !showDeleteAccountPassword }) {
                                     Icon(
                                         imageVector = if (showDeleteAccountPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                        contentDescription = if (showDeleteAccountPassword) "Hide password" else "Show password"
+                                        contentDescription = if (showDeleteAccountPassword) stringResource(id = R.string.hide_password) else stringResource(id = R.string.show_password)
                                     )
                                 }
                             },

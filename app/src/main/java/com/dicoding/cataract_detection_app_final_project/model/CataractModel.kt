@@ -13,6 +13,17 @@ import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
 /**
+ * Data class to hold image processing details for breakdown display
+ */
+data class ImageProcessingDetails(
+    val rawOutput: Float = 0f,
+    val meanBrightness: Float = 0f,
+    val variance: Float = 0f,
+    val edgeDensity: Float = 0f,
+    val isValidImage: Boolean = true
+)
+
+/**
  * TensorFlow Lite model class for CNN cataract detection
  */
 class CataractModel(private val context: Context) {
@@ -20,6 +31,7 @@ class CataractModel(private val context: Context) {
     private var interpreter: Interpreter? = null
     private var modelLoaded = false
     private var lastConfidence: Float = 0.0f
+    private var lastProcessingDetails: ImageProcessingDetails = ImageProcessingDetails()
     
     // Model input/output specifications
     private val INPUT_SIZE = 224
@@ -38,7 +50,7 @@ class CataractModel(private val context: Context) {
             val modelFiles = assetManager.list("")
             Log.d("CataractModel", "Available assets: ${modelFiles?.joinToString(", ")}")
             
-            if (modelFiles?.contains("cataract_model(2).tflite") == true) {
+            if (modelFiles?.contains("cataract_model_90percent.tflite") == true) {
                 Log.d("CataractModel", "Model file found in assets")
                 loadModel()
             } else {
@@ -58,7 +70,7 @@ class CataractModel(private val context: Context) {
     private fun tryAlternativeModelLoading() {
         try {
             Log.d("CataractModel", "Trying alternative model loading...")
-            val inputStream = context.assets.open("cataract_model(2).tflite")
+            val inputStream = context.assets.open("cataract_model_90percent.tflite")
             val modelBytes = inputStream.readBytes()
             inputStream.close()
             
@@ -91,7 +103,7 @@ class CataractModel(private val context: Context) {
     private fun loadModel() {
         try {
             Log.d("CataractModel", "Starting model loading...")
-            val modelBuffer = loadModelFile("cataract_model(2).tflite")
+            val modelBuffer = loadModelFile("cataract_model_90percent.tflite")
             Log.d("CataractModel", "Model file loaded, buffer size: ${modelBuffer.capacity()}")
             
             // Validate model buffer
@@ -207,6 +219,9 @@ class CataractModel(private val context: Context) {
             
             Log.d("CataractModel", "Raw probability: $probability")
             
+            // Update processing details with raw output
+            lastProcessingDetails = lastProcessingDetails.copy(rawOutput = probability)
+            
             // Calculate confidence
             // If prob > 0.5, it's Normal with confidence 'prob'
             // If prob <= 0.5, it's Cataract with confidence '1 - prob'
@@ -236,7 +251,7 @@ class CataractModel(private val context: Context) {
     }
     
     /**
-     * Validate image for basic quality checks (brightness, variance)
+     * Validate image for basic quality checks (brightness, variance, edge density)
      * Returns true if image seems valid, false if likely bad/non-eye
      */
     private fun validateImage(bitmap: Bitmap): Boolean {
@@ -270,7 +285,20 @@ class CataractModel(private val context: Context) {
             val meanSqBrightness = sumSqBrightness / numPixels
             val variance = meanSqBrightness - (meanBrightness * meanBrightness)
             
-            Log.d("CataractModel", "Image Stats - Mean Brightness: $meanBrightness, Variance: $variance")
+            // Calculate edge density using simple gradient
+            val edgeDensity = calculateEdgeDensity(pixels, width, height)
+            
+            Log.d("CataractModel", "Image Stats - Mean Brightness: $meanBrightness, Variance: $variance, Edge Density: $edgeDensity")
+            
+            // Store processing details for breakdown display
+            val isValid = meanBrightness in 20..235 && variance >= 100
+            lastProcessingDetails = ImageProcessingDetails(
+                rawOutput = 0f, // Will be updated after inference
+                meanBrightness = meanBrightness.toFloat(),
+                variance = variance.toFloat(),
+                edgeDensity = edgeDensity,
+                isValidImage = isValid
+            )
             
             // 1. Check if too dark or too bright
             // Range 0-255. < 20 is very dark, > 235 is blown out white
@@ -294,6 +322,46 @@ class CataractModel(private val context: Context) {
             Log.e("CataractModel", "Error validating image: ${e.message}")
             return true // Fail safe: assume valid if check fails
         }
+    }
+    
+    /**
+     * Calculate edge density using simple Sobel-like gradient
+     */
+    private fun calculateEdgeDensity(pixels: IntArray, width: Int, height: Int): Float {
+        var edgeSum = 0L
+        var count = 0
+        
+        for (y in 1 until height - 1) {
+            for (x in 1 until width - 1) {
+                val idx = y * width + x
+                
+                // Get grayscale values
+                val left = getGrayscale(pixels[idx - 1])
+                val right = getGrayscale(pixels[idx + 1])
+                val top = getGrayscale(pixels[idx - width])
+                val bottom = getGrayscale(pixels[idx + width])
+                
+                // Simple gradient magnitude
+                val gx = kotlin.math.abs(right - left)
+                val gy = kotlin.math.abs(bottom - top)
+                val gradient = gx + gy
+                
+                edgeSum += gradient
+                count++
+            }
+        }
+        
+        return if (count > 0) edgeSum.toFloat() / count else 0f
+    }
+    
+    /**
+     * Get grayscale value from pixel
+     */
+    private fun getGrayscale(pixel: Int): Int {
+        val r = (pixel shr 16) and 0xFF
+        val g = (pixel shr 8) and 0xFF
+        val b = pixel and 0xFF
+        return (0.299 * r + 0.587 * g + 0.114 * b).toInt()
     }
     
     /**
@@ -352,6 +420,14 @@ class CataractModel(private val context: Context) {
      */
     fun getConfidenceScore(): Float {
         return lastConfidence
+    }
+    
+    /**
+     * Get the image processing details from the last prediction
+     * @return ImageProcessingDetails containing brightness, variance, edge density, etc.
+     */
+    fun getProcessingDetails(): ImageProcessingDetails {
+        return lastProcessingDetails
     }
     
     /**

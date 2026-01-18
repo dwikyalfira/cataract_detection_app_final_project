@@ -3,8 +3,10 @@ package com.dicoding.cataract_detection_app_final_project.utils
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.util.Log
+import androidx.exifinterface.media.ExifInterface
 import com.dicoding.cataract_detection_app_final_project.view.ROIRect
 import com.dicoding.cataract_detection_app_final_project.view.ImageAdjustments
 import java.io.ByteArrayOutputStream
@@ -28,7 +30,7 @@ class ImageCropper(private val context: Context) {
         return try {
             Log.d("ImageCropper", "Starting image crop with ROI: $roiRect")
             
-            // Load original image
+            // Load original image with correct orientation
             val originalBitmap = loadBitmapFromUri(originalImageUri)
             if (originalBitmap == null) {
                 Log.e("ImageCropper", "Failed to load original bitmap")
@@ -95,17 +97,110 @@ class ImageCropper(private val context: Context) {
     }
     
     /**
-     * Load bitmap from URI
+     * Load bitmap from URI with correct EXIF orientation
      */
     private fun loadBitmapFromUri(uri: Uri): Bitmap? {
         return try {
+            // First, decode the bitmap
             val inputStream = context.contentResolver.openInputStream(uri)
             val bitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
-            bitmap
+            
+            if (bitmap == null) {
+                Log.e("ImageCropper", "Failed to decode bitmap")
+                return null
+            }
+            
+            // Read EXIF orientation and rotate if needed
+            val rotatedBitmap = correctBitmapOrientation(uri, bitmap)
+            
+            Log.d("ImageCropper", "Loaded bitmap with orientation correction: ${rotatedBitmap.width}x${rotatedBitmap.height}")
+            rotatedBitmap
+            
         } catch (e: Exception) {
             Log.e("ImageCropper", "Error loading bitmap from URI: ${e.message}", e)
             null
+        }
+    }
+    
+    /**
+     * Correct bitmap orientation based on EXIF data
+     */
+    private fun correctBitmapOrientation(uri: Uri, bitmap: Bitmap): Bitmap {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            if (inputStream == null) {
+                Log.w("ImageCropper", "Could not open input stream for EXIF reading")
+                return bitmap
+            }
+            
+            val exif = ExifInterface(inputStream)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+            inputStream.close()
+            
+            Log.d("ImageCropper", "EXIF orientation: $orientation")
+            
+            val matrix = Matrix()
+            
+            when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> {
+                    matrix.postRotate(90f)
+                    Log.d("ImageCropper", "Rotating image 90 degrees")
+                }
+                ExifInterface.ORIENTATION_ROTATE_180 -> {
+                    matrix.postRotate(180f)
+                    Log.d("ImageCropper", "Rotating image 180 degrees")
+                }
+                ExifInterface.ORIENTATION_ROTATE_270 -> {
+                    matrix.postRotate(270f)
+                    Log.d("ImageCropper", "Rotating image 270 degrees")
+                }
+                ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> {
+                    matrix.postScale(-1f, 1f)
+                    Log.d("ImageCropper", "Flipping image horizontally")
+                }
+                ExifInterface.ORIENTATION_FLIP_VERTICAL -> {
+                    matrix.postScale(1f, -1f)
+                    Log.d("ImageCropper", "Flipping image vertically")
+                }
+                ExifInterface.ORIENTATION_TRANSPOSE -> {
+                    matrix.postRotate(90f)
+                    matrix.postScale(-1f, 1f)
+                    Log.d("ImageCropper", "Transposing image")
+                }
+                ExifInterface.ORIENTATION_TRANSVERSE -> {
+                    matrix.postRotate(270f)
+                    matrix.postScale(-1f, 1f)
+                    Log.d("ImageCropper", "Transversing image")
+                }
+                else -> {
+                    Log.d("ImageCropper", "No rotation needed")
+                    return bitmap
+                }
+            }
+            
+            // Create rotated bitmap
+            val rotatedBitmap = Bitmap.createBitmap(
+                bitmap,
+                0, 0,
+                bitmap.width, bitmap.height,
+                matrix,
+                true
+            )
+            
+            // Recycle original if different
+            if (rotatedBitmap != bitmap) {
+                bitmap.recycle()
+            }
+            
+            rotatedBitmap
+            
+        } catch (e: Exception) {
+            Log.e("ImageCropper", "Error correcting orientation: ${e.message}", e)
+            bitmap // Return original bitmap if orientation correction fails
         }
     }
     
