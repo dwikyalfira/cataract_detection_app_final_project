@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Main presenter handling UI events and navigation
@@ -60,10 +61,17 @@ class MainPresenter {
     private val _showROIView = mutableStateOf(false)
     val showROIView: State<Boolean> = _showROIView
     
+    // History State
+    private val _historyList = mutableStateOf<List<AnalysisHistory>>(emptyList())
+    val historyList: State<List<AnalysisHistory>> = _historyList
+    
+    private val _isHistoryLoading = mutableStateOf(false)
+    val isHistoryLoading: State<Boolean> = _isHistoryLoading
+    
     // Navigation callbacks
     private var onNavigateToResult: (() -> Unit)? = null
     private var onNavigateToROI: (() -> Unit)? = null
-    private var onAnalysisComplete: ((Boolean) -> Unit)? = null
+
     
     fun setNavigationCallback(onNavigateToResult: () -> Unit) {
         this.onNavigateToResult = onNavigateToResult
@@ -73,9 +81,7 @@ class MainPresenter {
         this.onNavigateToROI = onNavigateToROI
     }
 
-    fun setAnalysisCompleteCallback(callback: (Boolean) -> Unit) {
-        this.onAnalysisComplete = callback
-    }
+
     
     /**
      * Initialize history repository and set current user
@@ -87,6 +93,29 @@ class MainPresenter {
         this.currentUserId = userId
         this.cataractModel = CataractModel(context)
         android.util.Log.d("MainPresenter", "initializeHistory - Model ready after init: ${cataractModel?.isModelReady()}")
+    }
+    
+    /**
+     * Load analysis history
+     * @param userId User ID
+     * @param forceRefresh If true, forces a network refresh even if data exists
+     */
+    fun loadHistory(userId: String, forceRefresh: Boolean = false) {
+        if (historyRepository == null) return
+        
+        // Only show loading if list is empty or forced
+        if (_historyList.value.isEmpty() || forceRefresh) {
+            _isHistoryLoading.value = true
+        }
+        
+        CoroutineScope(Dispatchers.IO).launch {
+            historyRepository!!.getAnalysisHistory(userId).collect { history ->
+                withContext(Dispatchers.Main) {
+                    _historyList.value = history
+                    _isHistoryLoading.value = false
+                }
+            }
+        }
     }
     
     /**
@@ -103,6 +132,13 @@ class MainPresenter {
      */
     fun setHistoryForViewing(history: AnalysisHistory) {
         _currentHistoryForViewing.value = history
+    }
+    
+    /**
+     * Clear history for viewing
+     */
+    fun clearHistoryForViewing() {
+        _currentHistoryForViewing.value = null
     }
     
     /**
@@ -135,6 +171,28 @@ class MainPresenter {
     fun onAdjustROI() {
         if (_selectedImageUri.value != null) {
             onNavigateToROI?.invoke()
+        }
+    }
+    
+    /**
+     * Delete analysis history
+     */
+    fun deleteHistory(historyId: String, userId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            historyRepository?.deleteAnalysisHistory(historyId, userId)
+            // Refresh list
+            loadHistory(userId, forceRefresh = false)
+        }
+    }
+    
+    /**
+     * Clear all history
+     */
+    fun clearAllHistory(userId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            historyRepository?.clearAllHistory(userId)
+            // Refresh list
+            loadHistory(userId, forceRefresh = false)
         }
     }
     
@@ -224,33 +282,37 @@ class MainPresenter {
                     
                     android.util.Log.d("MainPresenter", "Inference complete - Result: $result, Confidence: $confidence")
                     
-                    // Save to server (HistoryRepository handles compression and upload)
+                    // Save to server asynchronously (fire-and-forget from UI perspective)
+                    // Launch in a separate scope/job so it doesn't block navigation
                     historyRepository?.let { repo ->
-                        val history = AnalysisHistory(
-                            imageUri = imageUri, // Pass original URI, repository will handle upload
-                            predictionResult = result,
-                            confidence = confidence,
-                            userId = currentUserId,
-                            rawOutput = details.rawOutput,
-                            meanBrightness = details.meanBrightness,
-                            variance = details.variance,
-                            edgeDensity = details.edgeDensity
-                        )
-                        repo.saveAnalysisHistory(history)
+                        launch {
+                            try {
+                                val history = AnalysisHistory(
+                                    imageUri = imageUri, // Pass original URI, repository will handle upload
+                                    predictionResult = result,
+                                    confidence = confidence,
+                                    userId = currentUserId,
+                                    rawOutput = details.rawOutput,
+                                    meanBrightness = details.meanBrightness,
+                                    variance = details.variance,
+                                    edgeDensity = details.edgeDensity
+                                )
+                                android.util.Log.d("MainPresenter", "Saving history in background...")
+                                repo.saveAnalysisHistory(history)
+                                android.util.Log.d("MainPresenter", "History saved/uploaded in background")
+                            } catch (e: Exception) {
+                                android.util.Log.e("MainPresenter", "Failed to save history in background: ${e.message}")
+                            }
+                        }
                     }
                     
-                    // Switch back to main thread for UI updates
-                    CoroutineScope(Dispatchers.Main).launch {
+                    // Switch back to main thread for UI updates immediately
+                    withContext(Dispatchers.Main) {
                         _predictionResult.value = result
                         _confidenceScore.value = confidence
                         _processingDetails.value = details
                         
-                        // Notify analysis complete (Normal = healthy, Cataract = not healthy)
-                        // Only update stats for valid predictions
-                        if (result.equals("Normal", ignoreCase = true) || result.equals("Cataract", ignoreCase = true)) {
-                            val isHealthy = result.equals("Normal", ignoreCase = true)
-                            onAnalysisComplete?.invoke(isHealthy)
-                        }
+
                         
                         _isLoading.value = false
                         onNavigateToResult?.invoke()

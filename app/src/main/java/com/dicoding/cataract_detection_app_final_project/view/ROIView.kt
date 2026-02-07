@@ -1,7 +1,12 @@
 package com.dicoding.cataract_detection_app_final_project.view
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.Button
@@ -37,28 +44,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
-import com.dicoding.cataract_detection_app_final_project.R
+import androidx.compose.ui.unit.toSize
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
+import com.dicoding.cataract_detection_app_final_project.R
 import kotlin.math.max
 import kotlin.math.min
 
@@ -113,6 +121,7 @@ fun ROIView(
     var imageOffset by remember { mutableStateOf(Offset.Zero) }
     var imageSize by remember { mutableStateOf(Size.Zero) }
     var containerSize by remember { mutableStateOf(Size.Zero) }
+    var isTipsExpanded by remember { mutableStateOf(false) }
 
     val minScale = 0.5f
     val maxScale = 3.0f
@@ -152,6 +161,178 @@ fun ROIView(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+
+        // ROI Tips Dropdown Card - Enhanced for visibility
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .clickable { isTipsExpanded = !isTipsExpanded },
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            shape = RoundedCornerShape(12.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp)
+            ) {
+                // Header Row with attention indicator
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Attention indicator
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    RoundedCornerShape(4.dp)
+                                )
+                        )
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(
+                            text = stringResource(R.string.roi_tips_title),
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (isTipsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (isTipsExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+                
+                // Expandable Content
+                AnimatedVisibility(
+                    visible = isTipsExpanded,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(top = 12.dp)
+                    ) {
+                        // ROI Example Image with better contrast for dark mode
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            )
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.img_roi_example),
+                                contentDescription = stringResource(R.string.roi_tips_title),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .padding(8.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(10.dp))
+                        
+                        Text(
+                            text = stringResource(R.string.roi_tips_content),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        
+                        Spacer(modifier = Modifier.height(10.dp))
+                        
+                        // Good/Bad Examples with better dark mode colors
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Good column
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(
+                                        Color(0xFF1B5E20).copy(alpha = 0.15f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.roi_example_good),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = Color(0xFF4CAF50) // Material Green that works in both modes
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(stringResource(R.string.roi_tip_centered), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                Text(stringResource(R.string.roi_tip_closeup), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                Text(stringResource(R.string.roi_tip_clear), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            }
+                            // Bad column
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(
+                                        MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.roi_example_bad),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(stringResource(R.string.roi_tip_avoid_blur), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                Text(stringResource(R.string.roi_tip_avoid_partial), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(10.dp))
+                        
+                        // Adjust Tip with better visibility
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .padding(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ZoomIn,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                text = stringResource(R.string.roi_tip_adjust),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
             }
         }
 

@@ -2,6 +2,7 @@ package com.dicoding.cataract_detection_app_final_project.view
 
 //import androidx.compose.material.icons.filled.CameraAlt
 //import androidx.compose.material.icons.filled.Upload
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,10 +22,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,8 +49,6 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.dicoding.cataract_detection_app_final_project.R
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.material.icons.filled.Crop
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -512,34 +511,34 @@ fun CheckView(
             }
         }
         
-        // Medical Disclaimer Warning Card
-        androidx.compose.material3.ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "⚠️ ${stringResource(R.string.important_note)}",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(R.string.analysis_disclaimer),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-        }
+//        // Medical Disclaimer Warning Card
+//        androidx.compose.material3.ElevatedCard(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(vertical = 8.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.elevatedCardColors(
+//                containerColor = MaterialTheme.colorScheme.errorContainer
+//            )
+//        ) {
+//            Column(
+//                modifier = Modifier.padding(20.dp)
+//            ) {
+//                Text(
+//                    text = "⚠️ ${stringResource(R.string.important_note)}",
+//                    style = MaterialTheme.typography.titleMedium.copy(
+//                        fontWeight = FontWeight.Bold
+//                    ),
+//                    color = MaterialTheme.colorScheme.onErrorContainer
+//                )
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Text(
+//                    text = stringResource(R.string.analysis_disclaimer),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onErrorContainer
+//                )
+//            }
+//        }
 
     }
 }

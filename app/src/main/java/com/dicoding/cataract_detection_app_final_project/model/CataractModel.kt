@@ -39,60 +39,25 @@ class CataractModel(private val context: Context) {
     private val IMAGE_MEAN = 127.5f
     private val IMAGE_STD = 127.5f
     
-    // Confidence threshold for "Unknown" / "Not an Eye" detection
-    // Increased to 0.75 to filter out random non-eye objects that might accidentally trigger a match
+    // Confidence threshold for "Unknown" detection
     private val CONFIDENCE_THRESHOLD = 0.75f
     
-    init {
-        // Check if model file exists in assets
-        try {
-            val assetManager = context.assets
-            val modelFiles = assetManager.list("")
-            Log.d("CataractModel", "Available assets: ${modelFiles?.joinToString(", ")}")
-            
-            if (modelFiles?.contains("cataract_model_90percent.tflite") == true) {
-                Log.d("CataractModel", "Model file found in assets")
-                loadModel()
-            } else {
-                Log.e("CataractModel", "Model file not found in assets")
-                // Try alternative loading method
-                tryAlternativeModelLoading()
-            }
-        } catch (e: Exception) {
-            Log.e("CataractModel", "Error checking assets: ${e.message}", e)
-            modelLoaded = false
-        }
+    companion object {
+        private const val TAG = "CataractModel"
+        private const val MODEL_FILENAME = "cataract_model_90percent.tflite"
     }
     
-    /**
-     * Try alternative model loading method
-     */
-    private fun tryAlternativeModelLoading() {
+    init {
         try {
-            Log.d("CataractModel", "Trying alternative model loading...")
-            val inputStream = context.assets.open("cataract_model_90percent.tflite")
-            val modelBytes = inputStream.readBytes()
-            inputStream.close()
-            
-            Log.d("CataractModel", "Model file read successfully, size: ${modelBytes.size} bytes")
-            
-            if (modelBytes.isNotEmpty()) {
-                val modelBuffer = ByteBuffer.allocateDirect(modelBytes.size).order(ByteOrder.nativeOrder())
-                modelBuffer.put(modelBytes)
-                modelBuffer.rewind()
-                
-                val options = Interpreter.Options()
-                options.setNumThreads(4)
-                
-                interpreter = Interpreter(modelBuffer, options)
-                modelLoaded = true
-                Log.d("CataractModel", "Model loaded successfully using alternative method")
+            val modelFiles = context.assets.list("")
+            if (modelFiles?.contains(MODEL_FILENAME) == true) {
+                Log.d(TAG, "Model file found in assets")
+                loadModel()
             } else {
-                Log.e("CataractModel", "Model file is empty")
-                modelLoaded = false
+                Log.e(TAG, "Model file not found in assets")
             }
         } catch (e: Exception) {
-            Log.e("CataractModel", "Alternative model loading failed: ${e.message}", e)
+            Log.e(TAG, "Error checking assets: ${e.message}", e)
             modelLoaded = false
         }
     }
@@ -102,45 +67,22 @@ class CataractModel(private val context: Context) {
      */
     private fun loadModel() {
         try {
-            Log.d("CataractModel", "Starting model loading...")
-            val modelBuffer = loadModelFile("cataract_model_90percent.tflite")
-            Log.d("CataractModel", "Model file loaded, buffer size: ${modelBuffer.capacity()}")
+            val modelBuffer = loadModelFile(MODEL_FILENAME)
             
-            // Validate model buffer
             if (modelBuffer.capacity() == 0) {
                 throw Exception("Model buffer is empty")
             }
             
-            val options = Interpreter.Options()
-            options.setNumThreads(4)
-            // Add GPU delegate if available
-            try {
-                // options.addDelegate(GpuDelegate())
-                Log.d("CataractModel", "GPU delegate not enabled, using CPU")
-            } catch (e: Exception) {
-                Log.d("CataractModel", "GPU delegate not available, using CPU")
+            val options = Interpreter.Options().apply {
+                setNumThreads(4)
             }
             
-            val interpreter =
-                Interpreter(modelBuffer, options)
-            this.interpreter = interpreter
-            
-            // Test the interpreter
-            Log.d("CataractModel", "Testing interpreter...")
-            val inputShape = interpreter.getInputTensor(0)?.shape()
-            val outputShape = interpreter.getOutputTensor(0)?.shape()
-            Log.d("CataractModel", "Input shape: ${inputShape?.contentToString()}")
-            Log.d("CataractModel", "Output shape: ${outputShape?.contentToString()}")
-            
+            interpreter = Interpreter(modelBuffer, options)
             modelLoaded = true
-            Log.d("CataractModel", "Model loaded successfully")
+            Log.d(TAG, "Model loaded successfully")
         } catch (e: Exception) {
-            Log.e("CataractModel", "Error loading model: ${e.message}", e)
-            e.printStackTrace()
+            Log.e(TAG, "Error loading model: ${e.message}", e)
             modelLoaded = false
-
-            Log.d("CataractModel", "Attempting fallback model loading strategy")
-            tryAlternativeModelLoading()
         }
     }
     
@@ -148,110 +90,78 @@ class CataractModel(private val context: Context) {
      * Load model file from assets
      */
     private fun loadModelFile(modelPath: String): MappedByteBuffer {
-        try {
-            Log.d("CataractModel", "Loading model file: $modelPath")
-            val assetFileDescriptor = context.assets.openFd(modelPath)
-            Log.d("CataractModel", "Asset file descriptor opened successfully")
-            
-            val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
-            val fileChannel = inputStream.channel
-            val startOffset = assetFileDescriptor.startOffset
-            val declaredLength = assetFileDescriptor.declaredLength
-            
-            Log.d("CataractModel", "File details - Start offset: $startOffset, Length: $declaredLength")
-            
-            val mappedBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-            Log.d("CataractModel", "Model file mapped successfully, size: ${mappedBuffer.capacity()}")
-            
-            return mappedBuffer
-        } catch (e: Exception) {
-            Log.e("CataractModel", "Error loading model file: ${e.message}", e)
-            throw e
-        }
+        val assetFileDescriptor = context.assets.openFd(modelPath)
+        val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = assetFileDescriptor.startOffset
+        val declaredLength = assetFileDescriptor.declaredLength
+        
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
     
     /**
      * Predict cataract from image URI
      * @param imageUri Uri of the image file
-     * @return Prediction result ("Normal" or "Cataract")
+     * @return Prediction result ("Normal", "Cataract", or "Unknown")
      */
     fun predictCataract(imageUri: Uri): String {
         if (!modelLoaded || interpreter == null) {
-            Log.w("CataractModel", "Model not loaded, attempting to reinitialize")
+            Log.w(TAG, "Model not loaded, attempting to reinitialize")
             loadModel()
 
             if (!modelLoaded || interpreter == null) {
-                Log.e("CataractModel", "Model still unavailable after reinitialization")
+                Log.e(TAG, "Model still unavailable after reinitialization")
                 return "Error: Model failed to load"
             }
         }
         
         try {
-            Log.d("CataractModel", "Starting prediction with loaded model")
-            
             // Load and preprocess image
             val bitmap = loadImageFromUri(imageUri)
-            Log.d("CataractModel", "Image loaded, size: ${bitmap.width}x${bitmap.height}")
             
             // Check image validity (bad lighting, solid colors, etc)
             if (!validateImage(bitmap)) {
-                Log.d("CataractModel", "Image validation failed (too dark/bright or low variance)")
+                Log.d(TAG, "Image validation failed")
                 lastConfidence = 0.0f
                 return "Unknown"
             }
             
             val inputBuffer = preprocessImage(bitmap)
-            Log.d("CataractModel", "Image preprocessed, buffer size: ${inputBuffer.capacity()}")
             
-            // Prepare output array
-            // Model output is [1, 1] (Sigmoid activation for binary classification)
+            // Prepare output array (Sigmoid activation for binary classification)
             val outputArray = Array(1) { FloatArray(1) }
             
             // Run inference
-            Log.d("CataractModel", "Running inference...")
             interpreter?.run(inputBuffer, outputArray)
-            Log.d("CataractModel", "Inference completed")
             
             // Process results
-            // For sigmoid: 0.0 = Class 0 (Normal), 1.0 = Class 1 (Cataract)
-            // Threshold is usually 0.5
             val probability = outputArray[0][0]
-            
-            Log.d("CataractModel", "Raw probability: $probability")
+            Log.d(TAG, "Raw probability: $probability")
             
             // Update processing details with raw output
             lastProcessingDetails = lastProcessingDetails.copy(rawOutput = probability)
             
             // Calculate confidence
-            // If prob > 0.5, it's Normal with confidence 'prob'
-            // If prob <= 0.5, it's Cataract with confidence '1 - prob'
             lastConfidence = if (probability > 0.5f) probability else 1.0f - probability
             
             // Return prediction based on threshold
-            // User reported results were swapped, so we invert the logic:
-            // High probability (> 0.5) -> Normal
-            // Low probability (<= 0.5) -> Cataract
-            val result = if (lastConfidence < CONFIDENCE_THRESHOLD) {
-                Log.d("CataractModel", "Confidence $lastConfidence below threshold $CONFIDENCE_THRESHOLD -> Unknown")
-                "Unknown"
-            } else if (probability > 0.5f) {
-                "Normal"
-            } else {
-                "Cataract"
+            val result = when {
+                lastConfidence < CONFIDENCE_THRESHOLD -> "Unknown"
+                probability > 0.5f -> "Normal"
+                else -> "Cataract"
             }
             
-            Log.d("CataractModel", "Final prediction: $result with confidence: $lastConfidence")
+            Log.d(TAG, "Prediction: $result, Confidence: $lastConfidence")
             return result
             
         } catch (e: Exception) {
-            Log.e("CataractModel", "Error during prediction: ${e.message}", e)
-            e.printStackTrace()
+            Log.e(TAG, "Error during prediction: ${e.message}", e)
             return "Error: ${e.message}"
         }
     }
     
     /**
-     * Validate image for basic quality checks (brightness, variance, edge density)
+     * Validate image for basic quality checks (brightness, variance)
      * Returns true if image seems valid, false if likely bad/non-eye
      */
     private fun validateImage(bitmap: Bitmap): Boolean {
@@ -285,10 +195,8 @@ class CataractModel(private val context: Context) {
             val meanSqBrightness = sumSqBrightness / numPixels
             val variance = meanSqBrightness - (meanBrightness * meanBrightness)
             
-            // Calculate edge density using simple gradient
+            // Calculate edge density
             val edgeDensity = calculateEdgeDensity(pixels, width, height)
-            
-            Log.d("CataractModel", "Image Stats - Mean Brightness: $meanBrightness, Variance: $variance, Edge Density: $edgeDensity")
             
             // Store processing details for breakdown display
             val isValid = meanBrightness in 20..235 && variance >= 100
@@ -300,32 +208,28 @@ class CataractModel(private val context: Context) {
                 isValidImage = isValid
             )
             
-            // 1. Check if too dark or too bright
-            // Range 0-255. < 20 is very dark, > 235 is blown out white
+            // Check if too dark or too bright (range 0-255)
             if (meanBrightness < 20 || meanBrightness > 235) {
-                Log.d("CataractModel", "Image rejected: Too dark or too bright")
+                Log.d(TAG, "Image rejected: Too dark or too bright")
                 return false
             }
             
-            // 2. Check variance (consistency)
-            // Solid colors will have variance ~0.
-            // Eye images typically have good contrast (pupil vs iris vs sclera).
-            // Threshold of 100 is conservative (std dev 10).
+            // Check variance (solid colors will have variance ~0)
             if (variance < 100) {
-                Log.d("CataractModel", "Image rejected: Low variance (solid color or blurred)")
+                Log.d(TAG, "Image rejected: Low variance")
                 return false
             }
             
             return true
             
         } catch (e: Exception) {
-            Log.e("CataractModel", "Error validating image: ${e.message}")
+            Log.e(TAG, "Error validating image: ${e.message}")
             return true // Fail safe: assume valid if check fails
         }
     }
     
     /**
-     * Calculate edge density using simple Sobel-like gradient
+     * Calculate edge density using simple gradient
      */
     private fun calculateEdgeDensity(pixels: IntArray, width: Int, height: Int): Float {
         var edgeSum = 0L
@@ -335,7 +239,6 @@ class CataractModel(private val context: Context) {
             for (x in 1 until width - 1) {
                 val idx = y * width + x
                 
-                // Get grayscale values
                 val left = getGrayscale(pixels[idx - 1])
                 val right = getGrayscale(pixels[idx + 1])
                 val top = getGrayscale(pixels[idx - width])
@@ -344,9 +247,8 @@ class CataractModel(private val context: Context) {
                 // Simple gradient magnitude
                 val gx = kotlin.math.abs(right - left)
                 val gy = kotlin.math.abs(bottom - top)
-                val gradient = gx + gy
                 
-                edgeSum += gradient
+                edgeSum += gx + gy
                 count++
             }
         }
@@ -365,15 +267,6 @@ class CataractModel(private val context: Context) {
     }
     
     /**
-     * Fallback prediction when model is not available
-     */
-    private fun getFallbackPrediction(imageUri: Uri): String {
-        Log.d("CataractModel", "Using fallback prediction")
-        lastConfidence = 0.0f
-        return "Error: Unknown prediction failure"
-    }
-    
-    /**
      * Load image from URI and resize it
      */
     private fun loadImageFromUri(imageUri: Uri): Bitmap {
@@ -381,7 +274,6 @@ class CataractModel(private val context: Context) {
         val originalBitmap = BitmapFactory.decodeStream(inputStream)
         inputStream?.close()
         
-        // Resize bitmap to model input size
         return Bitmap.createScaledBitmap(originalBitmap, INPUT_SIZE, INPUT_SIZE, true)
     }
     
@@ -416,27 +308,18 @@ class CataractModel(private val context: Context) {
     
     /**
      * Get the confidence score from the last prediction
-     * @return Confidence score (0.0 to 1.0)
      */
-    fun getConfidenceScore(): Float {
-        return lastConfidence
-    }
+    fun getConfidenceScore(): Float = lastConfidence
     
     /**
      * Get the image processing details from the last prediction
-     * @return ImageProcessingDetails containing brightness, variance, edge density, etc.
      */
-    fun getProcessingDetails(): ImageProcessingDetails {
-        return lastProcessingDetails
-    }
+    fun getProcessingDetails(): ImageProcessingDetails = lastProcessingDetails
     
     /**
      * Check if the model is ready for inference
-     * @return True if model is ready, false otherwise
      */
-    fun isModelReady(): Boolean {
-        return modelLoaded && interpreter != null
-    }
+    fun isModelReady(): Boolean = modelLoaded && interpreter != null
     
     /**
      * Clean up resources

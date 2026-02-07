@@ -121,7 +121,9 @@
     <string name="analysis_deleted">Analisis telah dihapus</string>
     <string name="no_analysis_history">Tidak Ada Riwayat Analisis</string>
     <string name="no_analysis_history_message">Riwayat analisis Anda akan muncul di sini setelah Anda melakukan pemindaian mata pertama.</string>
+    <string name="loading_history">Memuat riwayat analisis…</string>
     <string name="confidence">Tingkat Kepercayaan: %d%%</string>
+    <string name="confidence_unknown">Tingkat Kepercayaan: -</string>
     <string name="tap_to_view_details">Ketuk untuk melihat detail</string>
     <string name="important_note">Catatan Penting</string>
     <string name="analysis_disclaimer">Analisis ini hanya untuk tujuan informasi. Silakan konsultasikan dengan tenaga kesehatan untuk diagnosis dan penanganan medis yang tepat.</string>
@@ -168,7 +170,7 @@
     <!-- CNN Information -->
     <string name="cnn_technology">Teknologi CNN</string>
     <string name="cnn_short_description">Pelajari tentang teknologi AI yang mendukung deteksi katarak</string>
-    <string name="cnn_title">Jaringan Neural Konvolusi (CNN)</string>
+    <string name="cnn_title">Teknologi CNN</string>
     <string name="cnn_subtitle">fitur dari gambar input</string>
     <string name="cnn_overview">Ringkasan CNN</string>
     <string name="cnn_overview_content">Jaringan Neural Konvolusi (CNN) adalah algoritma pembelajaran mendalam yang dapat menerima gambar input, memberikan kepentingan (bobot dan bias yang dapat dipelajari) pada berbagai aspek/objek dalam gambar, dan dapat membedakan satu dari yang lain.</string>
@@ -223,6 +225,18 @@
     <string name="back_to_home">Kembali ke Beranda</string>
     <string name="analysis_summary">Hasil Analisis</string>
     
+    <!-- ROI Tips -->
+    <string name="roi_tips_title">Panduan Posisi Gambar</string>
+    <string name="roi_tips_content">Untuk deteksi gambar yang akurat, pastikan gambar memenuhi kriteria berikut:\n\n✅ Mata harus berada di tengah frame\n✅ Pupil dan iris harus terlihat jelas\n✅ Foto close-up (mata mengisi 60–80% frame)\n✅ Fokus dan pencahayaan yang baik\n\n❌ Hindari: Gambar buram, mata terpotong, terlalu jauh/dekat</string>
+    <string name="roi_example_good">Contoh Baik:</string>
+    <string name="roi_example_bad">Hindari:</string>
+    <string name="roi_tip_centered">👁️ Mata di tengah, pupil terlihat</string>
+    <string name="roi_tip_closeup">🔍 Close-up</string>
+    <string name="roi_tip_clear">✨ Gambar jelas, pencahayaan baik</string>
+    <string name="roi_tip_avoid_blur">🚫 Gambar buram atau gelap</string>
+    <string name="roi_tip_avoid_partial">🚫 Mata terpotong atau terlalu jauh</string>
+    <string name="roi_tip_adjust">Gunakan zoom dan geser untuk memposisikan mata dengan benar di dalam elips</string>
+    
     <!-- Image Processing Breakdown -->
     <string name="image_breakdown">Rincian Gambar</string>
     <string name="expand">Buka</string>
@@ -261,14 +275,14 @@
     <!-- Info View Content -->
     <string name="about_cataract">Tentang Katarak</string>
     <string name="info_what_is_title">Apa itu Katarak?</string>
-    <string name="info_what_is_content">Katarak adalah kekeruhan pada lensa alami mata. Bagi penderita katarak, melihat melalui lensa yang keruh seperti melihat melalui jendela yang berembun atau berkabut. Penglihatan keruh akibat katarak dapat menyulitkan saat membaca, mengemudi (terutama di malam hari), atau melihat ekspresi wajah teman.</string>
+    <string name="info_what_is_content">Katarak adalah kekeruhan pada lensa mata yang biasanya jernih. Bagi penderita katarak, melihat melalui lensa yang keruh seperti melihat melalui jendela yang berembun atau berkabut. Penglihatan yang kabur akibat katarak dapat membuat lebih sulit untuk membaca, mengemudi mobil (terutama di malam hari) atau melihat ekspresi wajah teman.</string>
     <string name="info_symptoms_title">Gejala Umum</string>
-    <string name="info_symptoms_content">• Penglihatan keruh, kabur, atau redup\n• Meningkatnya kesulitan melihat di malam hari\n• Sensitivitas terhadap cahaya dan silau\n• Membutuhkan cahaya yang lebih terang untuk membaca\n• Melihat \'lingkaran cahaya\' di sekitar lampu\n• Sering mengganti resep kacamata atau lensa kontak\n• Warna tampak memudar atau menguning\n• Penglihatan ganda pada satu mata</string>
+    <string name="info_symptoms_content">• Penglihatan kabur, buram atau redup\n• Kesulitan penglihatan di malam hari yang meningkat\n• Sensitivitas terhadap cahaya dan silau\n• Kebutuhan cahaya yang lebih terang untuk membaca dan aktivitas lainnya\n• Melihat \'lingkaran cahaya\' di sekitar lampu\n• Perubahan resep kacamata atau lensa kontak yang sering\n• Warna yang memudar atau menguning\n• Penglihatan ganda pada satu mata</string>
     <string name="info_prevention_title">Pencegahan</string>
-    <string name="info_prevention_content">• Lakukan pemeriksaan mata secara teratur\n• Berhenti merokok\n• Atasi masalah kesehatan lainnya\n• Pilih makanan sehat yang kaya buah dan sayuran\n• Gunakan kacamata hitam yang memblokir sinar ultraviolet B (UVB)\n• Kurangi konsumsi alkohol\n• Jaga berat badan yang sehat</string>
+    <string name="info_prevention_content">• Lakukan pemeriksaan mata secara teratur\n• Berhenti merokok\n• Jaga kondisi kesehatan lainnya\n• Pilih pola makan sehat yang kaya buah dan sayuran\n• Kenakan kacamata hitam yang memblokir sinar ultraviolet B (UVB)\n• Kurangi konsumsi alkohol\n• Pertahankan berat badan yang sehat</string>
     <string name="info_risk_factors_title">Faktor Risiko</string>
-    <string name="info_risk_factors_content">• Bertambahnya usia\n• Diabetes\n• Paparan sinar matahari berlebihan\n• Merokok\n• Obesitas\n• Tekanan darah tinggi\n• Cedera atau peradangan mata sebelumnya\n• Operasi mata sebelumnya\n• Penggunaan obat kortikosteroid jangka panjang\n• Minum alkohol berlebihan</string>
+    <string name="info_risk_factors_content">• Bertambahnya usia\n• Diabetes\n• Paparan sinar matahari yang berlebihan\n• Merokok\n• Obesitas\n• Tekanan darah tinggi\n• Cedera atau peradangan mata sebelumnya\n• Operasi mata sebelumnya\n• Penggunaan obat kortikosteroid dalam jangka panjang\n• Konsumsi alkohol yang berlebihan</string>
     <string name="info_treatment_title">Pengobatan</string>
-    <string name="info_treatment_content">Ketika kacamata resep tidak lagi dapat menjernihkan penglihatan Anda, satu-satunya pengobatan efektif untuk katarak adalah operasi. Operasi katarak melibatkan pengangkatan lensa yang keruh dan menggantinya dengan lensa buatan yang jernih. Lensa buatan ini, yang disebut lensa intraokular, diposisikan di tempat yang sama dengan lensa alami Anda. Lensa ini menjadi bagian permanen dari mata Anda.</string>
-    <string name="back_to_home">Kembali ke Beranda</string>
+    <string name="info_treatment_content">Ketika resep kacamata tidak dapat memperjelas penglihatan Anda, satu-satunya pengobatan efektif untuk katarak adalah operasi. Operasi katarak melibatkan pengangkatan lensa yang keruh dan menggantinya dengan lensa buatan yang jernih. Lensa buatan, yang disebut lensa intraokular, diposisikan di tempat yang sama dengan lensa alami Anda. Lensa ini menjadi bagian permanen dari mata Anda.</string>
+
 </resources>

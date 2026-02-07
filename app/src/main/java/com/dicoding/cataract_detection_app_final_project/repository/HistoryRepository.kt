@@ -71,6 +71,7 @@ class HistoryRepository(private val context: Context) {
                 val meanBrightnessBody = history.meanBrightness.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 val varianceBody = history.variance.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 val edgeDensityBody = history.edgeDensity.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+                val timestampBody = history.timestamp.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 
                 // Upload to server
                 val response = apiService.uploadHistory(
@@ -81,7 +82,8 @@ class HistoryRepository(private val context: Context) {
                     rawOutput = rawOutputBody,
                     meanBrightness = meanBrightnessBody,
                     variance = varianceBody,
-                    edgeDensity = edgeDensityBody
+                    edgeDensity = edgeDensityBody,
+                    timestamp = timestampBody
                 )
                 
                 if (response.isSuccessful && response.body()?.status == "success") {
@@ -120,11 +122,21 @@ class HistoryRepository(private val context: Context) {
     }
     
     /**
-     * Clear all history for a user (not implemented for server-side - would need new endpoint)
+     * Clear all history for a user
      */
     suspend fun clearAllHistory(userId: String) {
-        android.util.Log.w("HistoryRepository", "clearAllHistory not implemented for server-side storage")
-        // TODO: Implement server-side clear all endpoint if needed
+        withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.deleteAllHistory(userId)
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    android.util.Log.d("HistoryRepository", "All history deleted successfully")
+                } else {
+                    android.util.Log.e("HistoryRepository", "Failed to delete all history: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("HistoryRepository", "Error deleting all history: ${e.message}", e)
+            }
+        }
     }
     
     /**

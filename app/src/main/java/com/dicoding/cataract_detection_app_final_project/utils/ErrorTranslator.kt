@@ -76,6 +76,12 @@ object ErrorTranslator {
                 context.getString(R.string.error_user_disabled)
             errorMessage.contains("email already in use", ignoreCase = true) -> 
                 context.getString(R.string.error_email_already_in_use)
+            errorMessage.contains("email already exists", ignoreCase = true) -> 
+                context.getString(R.string.error_email_already_in_use)
+            errorMessage.contains("already registered", ignoreCase = true) -> 
+                context.getString(R.string.error_email_already_in_use)
+            errorMessage.contains("Email sudah", ignoreCase = true) -> 
+                context.getString(R.string.error_email_already_in_use)
             errorMessage.contains("weak password", ignoreCase = true) -> 
                 context.getString(R.string.error_weak_password)
             

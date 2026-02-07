@@ -32,11 +32,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -74,14 +77,8 @@ import com.dicoding.cataract_detection_app_final_project.presenter.AuthPresenter
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-// Flag Emojis
-@Composable
-fun EnglishFlagEmoji(): String = "🇬🇧"
 
-@Composable
-fun IndonesianFlagEmoji(): String = "🇮🇩"
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsView(
     userPreferences: UserPreferences,
@@ -230,8 +227,8 @@ fun SettingsView(
                     icon = Icons.Default.Language,
                     content = {
                         val languageOptions = listOf(
-                            Triple(UserPreferences.LANG_INDONESIAN, stringResource(id = R.string.indonesian), IndonesianFlagEmoji()),
-                            Triple(UserPreferences.LANG_ENGLISH, stringResource(id = R.string.english), EnglishFlagEmoji())
+                            Triple(UserPreferences.LANG_INDONESIAN, stringResource(id = R.string.indonesian), "🇮🇩"),
+                            Triple(UserPreferences.LANG_ENGLISH, stringResource(id = R.string.english), "🇬🇧")
                         )
                         languageOptions.forEachIndexed { index, (option, text, emoji) ->
                             SettingsOption(
@@ -242,7 +239,6 @@ fun SettingsView(
                                 onClick = {
                                     if (language != option) {
                                         scope.launch {
-                                            android.util.Log.d("SettingsView", "Setting language to: $option")
                                             
                                             // First, save the language preference
                                             userPreferences.setLanguage(option)
@@ -260,8 +256,6 @@ fun SettingsView(
                                             val localeList = LocaleListCompat.create(locale)
                                             AppCompatDelegate.setApplicationLocales(localeList)
                                             
-                                            android.util.Log.d("SettingsView", "Locale set to: ${locale.language}")
-                                            
                                             // Show success message
                                             val languageName = when (option) {
                                                 UserPreferences.LANG_INDONESIAN -> "Bahasa Indonesia"
@@ -272,13 +266,11 @@ fun SettingsView(
                                             // Force a longer delay to ensure preferences are saved and locale is applied
                                             kotlinx.coroutines.delay(500)
                                             
-                                            // Additional logging for debugging
-                                            android.util.Log.d("SettingsView", "About to trigger activity recreation")
+                                            // Force a longer delay to ensure preferences are saved and locale is applied
+                                            kotlinx.coroutines.delay(500)
                                             
                                             // Trigger activity recreation
                                             onLanguageChanged()
-                                            
-                                            android.util.Log.d("SettingsView", "Activity recreation triggered")
                                         }
                                     }
                                 }
@@ -286,6 +278,8 @@ fun SettingsView(
                         }
                     }
                 )
+                
+                Spacer(modifier = Modifier.height(24.dp))
                 
                 // Password Change Section
                 SettingsSection(
@@ -579,18 +573,14 @@ fun SettingsView(
                             
                             isDeletingAccount = true
                             deleteAccountError = ""
-                            android.util.Log.d("SettingsView", "Starting delete account process")
                             onDeleteAccountClick(deleteAccountPassword) { success, message ->
-                                android.util.Log.d("SettingsView", "Delete account callback received - success: $success, message: $message")
                                 isDeletingAccount = false
                                 if (success) {
-                                    android.util.Log.d("SettingsView", "Account deletion successful, closing dialog and showing toast")
                                     showDeleteAccountDialog = false
                                     resetDeleteAccountFields()
                                     // Use Toast instead of snackbar for better reliability
                                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                                 } else {
-                                    android.util.Log.d("SettingsView", "Account deletion failed, showing error: $message")
                                     deleteAccountError = message
                                 }
                             }
@@ -618,6 +608,32 @@ fun SettingsView(
                     }
                 }
             )
+        }
+    }
+    
+    // Loading overlay for account deletion
+    if (isDeletingAccount) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                LoadingIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(id = R.string.deleting),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     }
 }

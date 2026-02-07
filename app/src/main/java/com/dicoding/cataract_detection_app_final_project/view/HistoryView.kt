@@ -29,6 +29,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +49,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,18 +67,30 @@ import com.dicoding.cataract_detection_app_final_project.data.AnalysisHistory
 import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HistoryView(
     userId: String,
+    historyList: List<AnalysisHistory>,
+    isLoading: Boolean,
+    onRefresh: () -> Unit,
+    onDelete: (String) -> Unit,
+    onClearAll: () -> Unit,
     onViewAnalysis: (AnalysisHistory) -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val historyRepository = remember { HistoryRepository(context) }
-    val analysisHistory by historyRepository.getAnalysisHistory(userId).collectAsState(initial = emptyList())
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Trigger initial load if empty and not loading - handled by parent now, but we can trigger refresh
+    LaunchedEffect(userId) {
+        if (historyList.isEmpty() && !isLoading) {
+            onRefresh()
+        }
+    }
+    
+    var isDeleting by remember { mutableStateOf(false) } // Track delete operation (UI only)
     
     var showClearAllDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf<AnalysisHistory?>(null) }
@@ -92,12 +107,13 @@ fun HistoryView(
         }
     }
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 0.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 0.dp)
+        ) {
         // Fixed Header Section (Non-scrollable)
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -105,8 +121,8 @@ fun HistoryView(
             Text(
                 text = stringResource(
                     id = R.string.analysis_count,
-                    analysisHistory.size,
-                    if (analysisHistory.size == 1) 
+                    historyList.size,
+                    if (historyList.size == 1) 
                         stringResource(id = R.string.analysis_singular)
                     else 
                         stringResource(id = R.string.analysis_plural)
@@ -122,7 +138,7 @@ fun HistoryView(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             
-            if (analysisHistory.isNotEmpty()) {
+            if (historyList.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 FilledTonalButton(
                     onClick = { showClearAllDialog = true },
@@ -154,7 +170,31 @@ fun HistoryView(
         BoxWithConstraints(
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (analysisHistory.isEmpty()) {
+            if (isLoading) {
+                // Loading State with Material Design 3 LoadingIndicator
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        LoadingIndicator(
+                            modifier = Modifier.size(48.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(id = R.string.loading_history),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else if (historyList.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -169,7 +209,7 @@ fun HistoryView(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     itemsIndexed(
-                        items = analysisHistory,
+                        items = historyList,
                         key = { _, item -> item.id }
                     ) { index, history ->
                         HistoryItem(
@@ -208,7 +248,10 @@ fun HistoryView(
                         onClick = {
                             showClearAllDialog = false
                             scope.launch {
-                                historyRepository.clearAllHistory(userId)
+                                // isDeleting = true // Managed by parent loading state or optimistic
+                                onClearAll()
+                                // Notification handled by parent or here if callback returns?
+                                // For simplicity assume success or parent handles toast
                                 showSnackbarWithResource(R.string.all_history_cleared)
                             }
                         },
@@ -250,7 +293,9 @@ fun HistoryView(
                         onClick = {
                             showDeleteDialog = null
                             scope.launch {
-                                historyRepository.deleteAnalysisHistory(history.id, userId)
+                                // isDeleting = true
+                                onDelete(history.id)
+                                // isDeleting = false
                                 showSnackbarWithResource(R.string.analysis_deleted)
                             }
                         },
@@ -271,6 +316,33 @@ fun HistoryView(
         
         // SnackbarHost for showing messages
         SnackbarHost(snackbarHostState)
+        }
+    
+        // Deleting overlay
+        if (isDeleting) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    LoadingIndicator(
+                        modifier = Modifier.size(48.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(id = R.string.deleting),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -278,7 +350,14 @@ fun HistoryView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryViewPreview() {
-    HistoryView(userId = "sampleUserId")
+    HistoryView(
+        userId = "sampleUserId", 
+        historyList = emptyList(), 
+        isLoading = false,
+        onRefresh = {},
+        onDelete = {},
+        onClearAll = {}
+    )
 }
 
 @Preview
@@ -453,8 +532,10 @@ private fun HistoryItem(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    // Show "-" for Unknown results
+                    val isUnknown = history.predictionResult.equals("Unknown", ignoreCase = true)
                     Text(
-                        text = stringResource(
+                        text = if (isUnknown) stringResource(id = R.string.confidence_unknown) else stringResource(
                             id = R.string.confidence,
                             (history.confidence * 100).toInt()
                         ),

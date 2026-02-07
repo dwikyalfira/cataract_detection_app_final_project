@@ -33,12 +33,6 @@ interface ApiService {
         @Field("current_password") currentPassword: String,
         @Field("new_password") newPassword: String
     ): Call<ApiResponse<Void>>
-    @FormUrlEncoded
-    @POST("update_stats.php")
-    fun updateUserStats(
-        @Field("uid") uid: String,
-        @Field("is_healthy") isHealthy: String
-    ): Call<ApiResponse<Void>>
 
     @FormUrlEncoded
     @POST("delete_account.php")
@@ -61,12 +55,7 @@ interface ApiService {
         @Field("new_password") newPassword: String
     ): Call<ApiResponse<Void>>
 
-    @FormUrlEncoded
-    @POST("delete_history_stats.php")
-    fun deleteHistoryStats(
-        @Field("uid") uid: String,
-        @Field("is_healthy") isHealthy: String
-    ): Call<ApiResponse<Void>>
+
 
     // History endpoints
     @Multipart
@@ -79,7 +68,8 @@ interface ApiService {
         @Part("raw_output") rawOutput: RequestBody,
         @Part("mean_brightness") meanBrightness: RequestBody,
         @Part("variance") variance: RequestBody,
-        @Part("edge_density") edgeDensity: RequestBody
+        @Part("edge_density") edgeDensity: RequestBody,
+        @Part("timestamp") timestamp: RequestBody
     ): Response<ApiResponse<HistoryUploadData>>
 
     @FormUrlEncoded
@@ -93,6 +83,12 @@ interface ApiService {
     suspend fun deleteHistory(
         @Field("user_id") userId: String,
         @Field("history_id") historyId: String
+    ): Response<ApiResponse<Void>>
+
+    @FormUrlEncoded
+    @POST("delete_all_history.php")
+    suspend fun deleteAllHistory(
+        @Field("user_id") userId: String
     ): Response<ApiResponse<Void>>
 }
 

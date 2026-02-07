@@ -120,7 +120,9 @@
     <string name="analysis_deleted">Analysis deleted</string>
     <string name="no_analysis_history">No Analysis History</string>
     <string name="no_analysis_history_message">Your analysis history will appear here after you perform your first eye scan.</string>
+    <string name="loading_history">Loading analysis history…</string>
     <string name="confidence">Confidence: %d%%</string>
+    <string name="confidence_unknown">Confidence: -</string>
     <string name="tap_to_view_details">Tap to view details</string>
     <string name="important_note">Important Note</string>
     <string name="analysis_disclaimer">This analysis is for informational purposes only. Please consult with a healthcare professional for proper medical diagnosis and treatment.</string>
@@ -164,10 +166,22 @@
     <string name="confirm_image_selection">Confirm your image selection</string>
     <string name="adjust_image">Adjust Image</string>
     
+    <!-- ROI Tips -->
+    <string name="roi_tips_title">Image Positioning Guide</string>
+    <string name="roi_tips_content">For accurate detection, ensure your image meets these criteria:\n\n✅ Eye should be centered in the frame\n✅ Pupil and iris must be clearly visible\n✅ Close-up shot (eye fills 60–80% of frame)\n✅ Good focus and lighting\n\n❌ Avoid: Blurry images, partial eye, too far/close</string>
+    <string name="roi_example_good">Good Example:</string>
+    <string name="roi_example_bad">Avoid:</string>
+    <string name="roi_tip_centered">👁️ Eye centered, pupil visible</string>
+    <string name="roi_tip_closeup">🔍 Close-up</string>
+    <string name="roi_tip_clear">✨ Clear, well-lit image</string>
+    <string name="roi_tip_avoid_blur">🚫 Blurry or dark images</string>
+    <string name="roi_tip_avoid_partial">🚫 Partial eye or too far</string>
+    <string name="roi_tip_adjust">Use zoom and drag to position the eye correctly within the ellipse</string>
+    
     <!-- CNN Information -->
     <string name="cnn_technology">CNN Technology</string>
     <string name="cnn_short_description">Learn about the AI technology powering cataract detection</string>
-    <string name="cnn_title">Convolutional Neural Network (CNN)</string>
+    <string name="cnn_title">CNN Technology</string>
     <string name="cnn_subtitle">features from input images</string>
     <string name="cnn_overview">CNN Overview</string>
     <string name="cnn_overview_content">A Convolutional Neural Network (CNN) is a deep learning algorithm that can take in an input image, assign importance (learnable weights and biases) to various aspects/objects in the image, and be able to differentiate one from the other.</string>
@@ -269,5 +283,5 @@
     <string name="info_risk_factors_content">• Increasing age\n• Diabetes\n• Excessive exposure to sunlight\n• Smoking\n• Obesity\n• High blood pressure\n• Previous eye injury or inflammation\n• Previous eye surgery\n• Prolonged use of corticosteroid medications\n• Drinking excessive amounts of alcohol</string>
     <string name="info_treatment_title">Treatment</string>
     <string name="info_treatment_content">When your prescription glasses can\'t clear your vision, the only effective treatment for cataracts is surgery. Cataract surgery involves removing the clouded lens and replacing it with a clear artificial lens. The artificial lens, called an intraocular lens, is positioned in the same place as your natural lens. It remains a permanent part of your eye.</string>
-    <string name="back_to_home">Back to Home</string>
+
 </resources>

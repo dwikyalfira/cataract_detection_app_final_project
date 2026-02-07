@@ -407,25 +407,4 @@ class AuthPresenter(private var context: Context) {
         })
     }
 
-    // Placeholder for updateUserStats to avoid compilation errors
-    fun updateUserStats(uid: String, isHealthy: Boolean) {
-        val isHealthyStr = if (isHealthy) "true" else "false"
-        
-        apiService.updateUserStats(uid, isHealthyStr).enqueue(object : Callback<ApiResponse<Void>> {
-            override fun onResponse(
-                call: Call<ApiResponse<Void>>,
-                response: Response<ApiResponse<Void>>
-            ) {
-                if (response.isSuccessful && response.body()?.status == "success") {
-                    android.util.Log.d("AuthPresenter", "Stats updated successfully")
-                } else {
-                    android.util.Log.e("AuthPresenter", "Failed to update stats: ${response.message()}")
-                }
-            }
-
-            override fun onFailure(call: Call<ApiResponse<Void>>, t: Throwable) {
-                android.util.Log.e("AuthPresenter", "Error updating stats: ${t.message}")
-            }
-        })
-    }
 }

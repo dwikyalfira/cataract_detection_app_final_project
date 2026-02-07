@@ -13,9 +13,6 @@ data class UserData(
     @SerializedName("uid") val uid: String,
     @SerializedName("name") val name: String,
     @SerializedName("email") val email: String,
-    @SerializedName("total_scans") val totalScans: Int = 0,
-    @SerializedName("healthy_scans") val healthyScans: Int = 0,
-    @SerializedName("alert_scans") val alertScans: Int = 0,
     @SerializedName("created_at") val createdAt: String? = null
 )
 

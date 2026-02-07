@@ -3,7 +3,6 @@ package com.dicoding.cataract_detection_app_final_project.view
 //import androidx.compose.material.icons.filled.CameraAlt
 //import androidx.compose.material.icons.filled.Image
 //import androidx.compose.material.icons.filled.Upload
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -32,9 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -119,7 +115,7 @@ fun HomeView(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "🧠 ${stringResource(id = R.string.cnn_technology)}",
+                        text = "${stringResource(id = R.string.cnn_technology)}",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
@@ -141,140 +137,181 @@ fun HomeView(
             }
         }
         
-        // Cataract Information Card
+        // About Cataract Card - Navigate to InfoView
         androidx.compose.material3.ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 8.dp)
+                .clickable { onNavigateToInfo() },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
             )
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
+            Row(
+                modifier = Modifier.padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "🔍 ${stringResource(id = R.string.what_are_cataracts)}",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Image(
-                    painter = painterResource(id = R.drawable.img_cataract_info),
-                    contentDescription = stringResource(R.string.cataract_vs_normal),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(250.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { fullScreenImageRes = R.drawable.img_cataract_info },
-                    contentScale = ContentScale.Crop
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(id = R.string.cataracts_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(id = R.string.cataract_symptoms),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "${stringResource(id = R.string.about_cataract)}",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(id = R.string.info_what_is_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = stringResource(R.string.learn_more),
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
         
-        // Prevention Tips Card
-        androidx.compose.material3.ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "🛡️ ${stringResource(id = R.string.prevention_tips)}",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(id = R.string.prevention_content),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+//        // Cataract Information Card
+//        androidx.compose.material3.ElevatedCard(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(vertical = 8.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.elevatedCardColors(
+//                containerColor = MaterialTheme.colorScheme.surface
+//            )
+//        ) {
+//            Column(
+//                modifier = Modifier.padding(20.dp)
+//            ) {
+//                Text(
+//                    text = "${stringResource(id = R.string.what_are_cataracts)}",
+//                    style = MaterialTheme.typography.titleLarge.copy(
+//                        fontWeight = FontWeight.Bold
+//                    ),
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
+//                Spacer(modifier = Modifier.height(12.dp))
+//
+//                Image(
+//                    painter = painterResource(id = R.drawable.img_cataract_info),
+//                    contentDescription = stringResource(R.string.cataract_vs_normal),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(250.dp)
+//                        .clip(RoundedCornerShape(8.dp))
+//                        .clickable { fullScreenImageRes = R.drawable.img_cataract_info },
+//                    contentScale = ContentScale.Crop
+//                )
+//
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Text(
+//                    text = stringResource(id = R.string.cataracts_description),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Text(
+//                    text = stringResource(id = R.string.cataract_symptoms),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
+//            }
+//        }
         
-        // Treatment Information Card
-        androidx.compose.material3.ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "🏥 ${stringResource(id = R.string.treatment_options)}",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(id = R.string.treatment_content),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
+//        // Prevention Tips Card
+//        androidx.compose.material3.ElevatedCard(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(vertical = 8.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.elevatedCardColors(
+//                containerColor = MaterialTheme.colorScheme.surfaceVariant
+//            )
+//        ) {
+//            Column(
+//                modifier = Modifier.padding(20.dp)
+//            ) {
+//                Text(
+//                    text = "🛡️ ${stringResource(id = R.string.prevention_tips)}",
+//                    style = MaterialTheme.typography.titleLarge.copy(
+//                        fontWeight = FontWeight.Bold
+//                    ),
+//                    color = MaterialTheme.colorScheme.onSurfaceVariant
+//                )
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Text(
+//                    text = stringResource(id = R.string.prevention_content),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onSurfaceVariant
+//                )
+//            }
+//        }
         
-        // App Information Card
-        androidx.compose.material3.ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "📱 ${stringResource(id = R.string.about_this_app)}",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(id = R.string.app_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-        }
+//        // Treatment Information Card
+//        androidx.compose.material3.ElevatedCard(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(vertical = 8.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.elevatedCardColors(
+//                containerColor = MaterialTheme.colorScheme.surface
+//            )
+//        ) {
+//            Column(
+//                modifier = Modifier.padding(20.dp)
+//            ) {
+//                Text(
+//                    text = "🏥 ${stringResource(id = R.string.treatment_options)}",
+//                    style = MaterialTheme.typography.titleLarge.copy(
+//                        fontWeight = FontWeight.Bold
+//                    ),
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Text(
+//                    text = stringResource(id = R.string.treatment_content),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
+//            }
+//        }
+//
+//        // App Information Card
+//        androidx.compose.material3.ElevatedCard(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(vertical = 8.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.elevatedCardColors(
+//                containerColor = MaterialTheme.colorScheme.primaryContainer
+//            )
+//        ) {
+//            Column(
+//                modifier = Modifier.padding(20.dp)
+//            ) {
+//                Text(
+//                    text = "📱 ${stringResource(id = R.string.about_this_app)}",
+//                    style = MaterialTheme.typography.titleLarge.copy(
+//                        fontWeight = FontWeight.Bold
+//                    ),
+//                    color = MaterialTheme.colorScheme.onPrimaryContainer
+//                )
+//                Spacer(modifier = Modifier.height(12.dp))
+//                Text(
+//                    text = stringResource(id = R.string.app_description),
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    color = MaterialTheme.colorScheme.onPrimaryContainer
+//                )
+//            }
+//        }
 
         // Medical Disclaimer Warning Card
         androidx.compose.material3.ElevatedCard(

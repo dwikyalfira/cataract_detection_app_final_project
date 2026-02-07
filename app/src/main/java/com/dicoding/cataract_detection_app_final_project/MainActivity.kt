@@ -38,11 +38,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
@@ -58,24 +60,22 @@ import com.dicoding.cataract_detection_app_final_project.data.UserPreferences
 import com.dicoding.cataract_detection_app_final_project.presenter.AuthPresenter
 import com.dicoding.cataract_detection_app_final_project.presenter.MainPresenter
 import com.dicoding.cataract_detection_app_final_project.presenter.Screen
+import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
 import com.dicoding.cataract_detection_app_final_project.theme.CataractDetectionExpressiveTheme
 import com.dicoding.cataract_detection_app_final_project.utils.ImagePicker
 import com.dicoding.cataract_detection_app_final_project.utils.ImageStorageManager
-import com.dicoding.cataract_detection_app_final_project.utils.UserSession
 import com.dicoding.cataract_detection_app_final_project.view.CNNExplanationView
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.runtime.rememberCoroutineScope
-import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
 import com.dicoding.cataract_detection_app_final_project.view.CheckView
 import com.dicoding.cataract_detection_app_final_project.view.ForgotPasswordView
 import com.dicoding.cataract_detection_app_final_project.view.HistoryResultView
 import com.dicoding.cataract_detection_app_final_project.view.HistoryView
 import com.dicoding.cataract_detection_app_final_project.view.HomeView
+import com.dicoding.cataract_detection_app_final_project.view.CataractExplanationView
 import com.dicoding.cataract_detection_app_final_project.view.LoginView
 import com.dicoding.cataract_detection_app_final_project.view.ProfileView
+import com.dicoding.cataract_detection_app_final_project.view.ROIView
 import com.dicoding.cataract_detection_app_final_project.view.RegisterView
 import com.dicoding.cataract_detection_app_final_project.view.ResultView
-import com.dicoding.cataract_detection_app_final_project.view.ROIView
 import com.dicoding.cataract_detection_app_final_project.view.SettingsView
 import com.dicoding.cataract_detection_app_final_project.view.SplashView
 import kotlinx.coroutines.delay
@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
             prefs.edit { putString("language", UserPreferences.LANG_INDONESIAN) }
         }
         
-        android.util.Log.d("MainActivity", "attachBaseContext - Language from preferences: $lang")
+        
         
         val locale = when (lang) {
             UserPreferences.LANG_INDONESIAN -> Locale.forLanguageTag("id")
@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
             else -> Locale.forLanguageTag("id") // Default to Indonesian
         }
         
-        android.util.Log.d("MainActivity", "attachBaseContext - Setting locale to: ${locale.language}")
+        
         
         // Set system locale
         Locale.setDefault(locale)
@@ -125,16 +125,14 @@ class MainActivity : ComponentActivity() {
         imagePicker = ImagePicker(this)
         
         // Log current locale for debugging
-        android.util.Log.d("MainActivity", "onCreate - Current locale: ${Locale.getDefault().language}")
         
         // Initialize UserPreferences to ensure language is set
         lifecycleScope.launch {
             userPreferences.initializeFromSharedPreferences()
-            android.util.Log.d("MainActivity", "onCreate - UserPreferences initialized")
             
             // Force apply the current language setting
+            
             val currentLanguage = userPreferences.getLanguageSync()
-            android.util.Log.d("MainActivity", "onCreate - Current language from preferences: $currentLanguage")
             
             val locale = when (currentLanguage) {
                 UserPreferences.LANG_INDONESIAN -> Locale.forLanguageTag("id")
@@ -145,7 +143,6 @@ class MainActivity : ComponentActivity() {
             // Force set the application locale
             val localeList = LocaleListCompat.create(locale)
             AppCompatDelegate.setApplicationLocales(localeList)
-            android.util.Log.d("MainActivity", "onCreate - Forced locale to: ${locale.language}")
         }
 
         val initialTheme = userPreferences.getThemeModeSync()
@@ -160,8 +157,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by userPreferences.themeMode.collectAsState(initial = initialTheme)
             
-            // Debug logging
-            android.util.Log.d("MainActivity", "Current theme mode: $themeMode, Initial theme: $initialTheme")
+            
 
             CataractDetectionExpressiveTheme(
                 themeMode = themeMode,
@@ -171,7 +167,6 @@ class MainActivity : ComponentActivity() {
                     context = this@MainActivity,
                     userPreferences = userPreferences, 
                     onRecreate = { 
-                        android.util.Log.d("MainActivity", "Recreating activity for language change")
                         // Force restart the app to ensure locale changes are applied
                         restartApp()
                     },
@@ -182,13 +177,10 @@ class MainActivity : ComponentActivity() {
     }
     
     private fun restartApp() {
-        android.util.Log.d("MainActivity", "Restarting app for language change")
         
         // Get the current language preference
         val prefs = getSharedPreferences("user_preferences", MODE_PRIVATE)
         val language = prefs.getString("language", UserPreferences.LANG_INDONESIAN) ?: UserPreferences.LANG_INDONESIAN
-        
-        android.util.Log.d("MainActivity", "Current language preference: $language")
         
         // Apply the locale immediately
         val locale = when (language) {
@@ -203,8 +195,6 @@ class MainActivity : ComponentActivity() {
         // Set AppCompatDelegate locale
         val localeList = LocaleListCompat.create(locale)
         AppCompatDelegate.setApplicationLocales(localeList)
-        
-        android.util.Log.d("MainActivity", "Locale set to: ${locale.language}")
         
         // Force complete app restart by finishing and starting new intent
         val intent = packageManager.getLaunchIntentForPackage(packageName)
@@ -295,13 +285,6 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
     }
     val authPresenter = remember { AuthPresenter(context) }
     
-    // Connect analysis completion to stats update
-    presenter.setAnalysisCompleteCallback { isHealthy ->
-        val currentUser = authPresenter.currentUser.value
-        if (currentUser != null) {
-            authPresenter.updateUserStats(currentUser.uid, isHealthy)
-        }
-    }
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
 
@@ -435,7 +418,6 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route ?: NavigationItem.Home.route
 
-
                 // ROI adjustment is now included in the global top bar
                 if (true) {
                     val title = when (currentRoute) {
@@ -444,6 +426,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         NavigationItem.Profile.route -> stringResource(R.string.my_profile)
                         "settings" -> stringResource(R.string.settings)
                         "cnn_explanation" -> stringResource(R.string.cnn_title)
+                        "info" -> stringResource(R.string.about_cataract)
                         "history" -> stringResource(R.string.analysis_history)
                         "history_result" -> stringResource(R.string.analysis_result)
                         "result" -> stringResource(R.string.analysis_result)
@@ -452,7 +435,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                     }
 
                     val showBackButton = currentRoute == "settings" || currentRoute == "cnn_explanation" || 
-                                       currentRoute == "history" || currentRoute == "history_result" ||
+                                       currentRoute == "info" || currentRoute == "history" || currentRoute == "history_result" ||
                                        currentRoute == "result" || currentRoute == "roi_adjustment"
 
                     TopAppBar(
@@ -504,7 +487,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                 
                 // Hide bottom navigation bar on child pages
                 val isChildPage = currentRoute == "settings" || currentRoute == "cnn_explanation" || 
-                                currentRoute == "history" || currentRoute == "history_result" || 
+                                currentRoute == "info" || currentRoute == "history" || currentRoute == "history_result" || 
                                 currentRoute == "result" || currentRoute == "roi_adjustment"
                 
                 if (isChildPage) {
@@ -576,7 +559,7 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                                 }
                             }
                         },
-                        onNavigateToInfo = { presenter.navigateTo(Screen.Info) },
+                        onNavigateToInfo = { navController.navigate("info") },
                         onNavigateToProfile = { presenter.navigateTo(Screen.Profile) },
                         onNavigateToCNN = { navController.navigate("cnn_explanation") },
                         isLoading = presenter.isLoading.value,
@@ -651,8 +634,21 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                     }
                 }
                 composable("history") {
+                    val userId = currentUser?.uid ?: ""
+                    // Load history if needed (handled by presenter logic)
+                    LaunchedEffect(userId) {
+                        if (userId.isNotEmpty()) {
+                            presenter.loadHistory(userId)
+                        }
+                    }
+                    
                     HistoryView(
-                        userId = currentUser?.uid ?: "",
+                        userId = userId,
+                        historyList = presenter.historyList.value,
+                        isLoading = presenter.isHistoryLoading.value,
+                        onRefresh = { presenter.loadHistory(userId, forceRefresh = true) },
+                        onDelete = { historyId -> presenter.deleteHistory(historyId, userId) },
+                        onClearAll = { presenter.clearAllHistory(userId) },
                         onViewAnalysis = { history ->
                             presenter.setHistoryForViewing(history)
                             navController.navigate("history_result")
@@ -669,11 +665,33 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                     
                     HistoryResultView(
                         history = history,
-                        onBackClick = { navController.popBackStack() },
+                        onBackClick = { 
+                            navController.popBackStack() 
+                        },
                         onDeleteClick = {
                             if (history != null && user != null) {
                                 scope.launch {
                                     historyRepository.deleteAnalysisHistory(history.id, user.uid)
+                                    // Refresh list in presenter is handled by loadHistory auto-refresh logic or we should call delete in presenter?
+                                    // Wait, I updated delete logic to use presenter.deleteHistory in HistoryView, 
+                                    // but here in HistoryResultView we are using direct repository + navController pop.
+                                    // Ideally we should use presenter.deleteHistory here too!
+                                    // But presenter.deleteHistory is void/fire-and-forget.
+                                    // For now, tdeleteHistory(history.id, user.uid) -> This refreshes the list in background.
+                                    // We just need to pop.
+                                    
+                                    // BETTER: Call usage of presenter.deleteHistory?
+                                    // But presenter.deleteHistory launches its own coroutine.
+                                    // If we use that, we might pop before delete finishes (which is fine usually).
+                                    // Let's stick to minimal change to fix the FLASH first. 
+                                    // The user code previously used historyRepository directly here. I'll just remove the clear.
+                                    
+                                    // Wait, if I use historyRepository here, the Presenter list won't update!
+                                    // So when I go back, the list will still show the deleted item until I pull refresh.
+                                    // I SHOULD use preso match previous logic:
+                                    // presenter.enter.deleteHistory(history.id, user.uid) here to ensure consistency!
+                                    
+                                    presenter.deleteHistory(history.id, user.uid)
                                     navController.popBackStack()
                                 }
                             }
@@ -712,12 +730,13 @@ fun CataractDetectorApp(context: Context, userPreferences: UserPreferences, onRe
                         scrollBehavior = scrollBehavior
                     )
                 }
+                composable("info") {
+                    CataractExplanationView(
+                        scrollBehavior = scrollBehavior
+                    )
+                }
             }
         }
     }
 }
 
-@Composable
-fun SplashView() {
-    // TODO: Implement splash screen
-}

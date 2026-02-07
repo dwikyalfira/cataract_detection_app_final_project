@@ -115,7 +115,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // In your app/build.gradle.kts dependencies block
-    implementation("androidx.compose.material3:material3:1.4.0") // Or a newer stable/beta version
+    implementation("androidx.compose.material3:material3:1.5.0-alpha01") // Updated for LoadingIndicator support
 
     // TensorFlow Lite (LiteRT) dependencies
     implementation("com.google.ai.edge.litert:litert:1.0.1")

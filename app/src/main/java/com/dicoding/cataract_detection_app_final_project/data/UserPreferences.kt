@@ -100,23 +100,4 @@ class UserPreferences(private val context: Context) {
         }
     }
     
-    // Force set language to Indonesian (for testing/debugging)
-    suspend fun forceSetIndonesian() {
-        context.dataStore.edit { preferences ->
-            preferences[LANGUAGE] = LANG_INDONESIAN
-        }
-        val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        prefs.edit().putString("language", LANG_INDONESIAN).apply()
-        android.util.Log.d("UserPreferences", "Force set language to Indonesian")
-    }
-    
-    // Force set language to English (for testing/debugging)
-    suspend fun forceSetEnglish() {
-        context.dataStore.edit { preferences ->
-            preferences[LANGUAGE] = LANG_ENGLISH
-        }
-        val prefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-        prefs.edit().putString("language", LANG_ENGLISH).apply()
-        android.util.Log.d("UserPreferences", "Force set language to English")
-    }
 }
