@@ -68,7 +68,6 @@ interface ApiService {
         @Part("raw_output") rawOutput: RequestBody,
         @Part("mean_brightness") meanBrightness: RequestBody,
         @Part("variance") variance: RequestBody,
-        @Part("edge_density") edgeDensity: RequestBody,
         @Part("timestamp") timestamp: RequestBody
     ): Response<ApiResponse<HistoryUploadData>>
 

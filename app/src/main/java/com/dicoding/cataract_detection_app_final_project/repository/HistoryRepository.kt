@@ -70,7 +70,6 @@ class HistoryRepository(private val context: Context) {
                 val rawOutputBody = history.rawOutput.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 val meanBrightnessBody = history.meanBrightness.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 val varianceBody = history.variance.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-                val edgeDensityBody = history.edgeDensity.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 val timestampBody = history.timestamp.toString().toRequestBody("text/plain".toMediaTypeOrNull())
                 
                 // Upload to server
@@ -82,7 +81,6 @@ class HistoryRepository(private val context: Context) {
                     rawOutput = rawOutputBody,
                     meanBrightness = meanBrightnessBody,
                     variance = varianceBody,
-                    edgeDensity = edgeDensityBody,
                     timestamp = timestampBody
                 )
                 
@@ -223,8 +221,7 @@ class HistoryRepository(private val context: Context) {
             userId = this.userId,
             rawOutput = this.rawOutput,
             meanBrightness = this.meanBrightness,
-            variance = this.variance,
-            edgeDensity = this.edgeDensity
+            variance = this.variance
         )
     }
 }

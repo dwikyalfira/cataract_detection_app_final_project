@@ -89,14 +89,13 @@
     <string name="already_have_account">Sudah punya akun? </string>
     <string name="name_hint">Masukkan nama lengkap Anda</string>
     <string name="confirm_password_hint">Konfirmasi kata sandi Anda</string>
-    <string name="terms_privacy">Dengan mendaftar, Anda menyetujui Syarat Layanan dan Kebijakan Privasi kami. Data Anda akan digunakan untuk memberikan layanan deteksi katarak dan meningkatkan model AI kami.</string>
-    
+
     <!-- Password Change -->
     <string name="change_password">Ubah Kata Sandi</string>
     <string name="current_password">Kata Sandi Saat Ini</string>
     <string name="new_password">Kata Sandi Baru</string>
-    <string name="changing">Mengubah...</string>
-    <string name="deleting">Menghapus...</string>
+    <string name="changing">Mengubah…</string>
+    <string name="deleting">Menghapus…</string>
     <string name="account_deleted_successfully">Akun berhasil dihapus</string>
     
     <!-- History -->
@@ -135,24 +134,24 @@
 
     <!-- Home Page -->
     <string name="eye_health_overview">Ringkasan Kesehatan Mata</string>
-    <string name="eye_health_description">Mata Anda adalah salah satu indera terpenting. Menjaga kesehatan mata sangat penting untuk kesejahteraan dan kualitas hidup Anda secara keseluruhan. Pemeriksaan mata rutin dan deteksi dini kondisi mata dapat membantu melestarikan penglihatan Anda.</string>
+    <string name="eye_health_description">Mata berperan penting dalam kehidupan sehari-hari. Dengan menjaga kesehatan mata dan melakukan pemeriksaan secara rutin, Anda dapat mendeteksi gangguan lebih awal dan mempertahankan kualitas penglihatan.</string>
     <string name="what_are_cataracts">Apa itu Katarak?</string>
-    <string name="cataracts_description">Katarak adalah kekeruhan pada lensa alami mata, yang terletak di belakang iris dan pupil. Katarak adalah penyebab paling umum dari kehilangan penglihatan pada orang di atas usia 40 tahun dan merupakan penyebab utama kebutaan di seluruh dunia.</string>
-    <string name="cataract_symptoms">Gejala umum meliputi:\n• Penglihatan kabur atau keruh\n• Kesulitan melihat di malam hari\n• Sensitivitas terhadap cahaya dan silau\n• Melihat lingkaran cahaya di sekitar lampu\n• Perubahan resep kacamata yang sering</string>
+    <string name="cataracts_description">Katarak terjadi ketika lensa mata yang ada di belakang pupil menjadi keruh. Ini adalah penyebab utama gangguan penglihatan pada orang berusia di atas 40 tahun dan menjadi salah satu pemicu kebutaan terbanyak di dunia.</string>
+    <string name="cataract_symptoms">Gejala umum meliputi:\n• Penglihatan terlihat buram atau berkabut\n• Sulit melihat saat malam hari\n• Mata lebih sensitif terhadap cahaya terang\n• Melihat lingkaran cahaya di sekeliling lampu</string>
     <string name="prevention_tips">Tips Pencegahan</string>
-    <string name="prevention_content">Meskipun katarak sebagian besar terkait usia, Anda dapat mengambil langkah-langkah untuk melindungi mata Anda:\n\n• Kenakan kacamata hitam dengan perlindungan UV\n• Berhenti merokok\n• Makan makanan sehat kaya antioksidan\n• Kelola diabetes dan kondisi kesehatan lainnya\n• Lakukan pemeriksaan mata rutin\n• Batasi konsumsi alkohol</string>
+    <string name="prevention_content">Meski katarak umumnya muncul karena faktor usia, Anda tetap bisa menjaga kesehatan mata dengan cara:\n\n• Kenakan kacamata hitam yang melindungi dari sinar UV\n• Hentikan kebiasaan merokok\n• Makan makanan sehat yang kaya antioksidan\n• Kelola diabetes dan kondisi kesehatan lainnya\n• Lakukan pemeriksaan mata rutin\n• Tidak mengkonsumsi alkohol</string>
     <string name="treatment_options">Opsi Perawatan</string>
-    <string name="treatment_content">Operasi katarak adalah salah satu prosedur paling umum dan berhasil yang dilakukan saat ini. Operasi melibatkan pengangkatan lensa yang keruh dan menggantinya dengan lensa buatan yang jernih.\n\nDeteksi dini melalui pemeriksaan mata rutin adalah kunci untuk perawatan yang berhasil dan mempertahankan penglihatan yang baik.</string>
+    <string name="treatment_content">Operasi katarak termasuk prosedur medis yang paling sering dilakukan dan tingkat keberhasilannya sangat tinggi.\n Prosesnya adalah mengganti lensa mata yang keruh dengan lensa buatan yang jernih. Kunci keberhasilan pengobatan adalah deteksi sejak dini melalui pemeriksaan mata secara berkala, sehingga penglihatan Anda tetap terjaga dengan baik.</string>
     <string name="about_this_app">Tentang Aplikasi Ini</string>
-    <string name="app_description">Aplikasi ini menggunakan teknologi AI untuk membantu mendeteksi potensi katarak dalam gambar mata. Gunakan tab \'Periksa\' untuk menganalisis gambar, dan kunjungi \'Profil\' Anda untuk statistik dan informasi pribadi.</string>
+    <string name="app_description">Aplikasi ini memanfaatkan teknologi CNN untuk membantu mendeteksi kemungkinan katarak dari foto mata Anda. Gunakan menu \'Periksa\' untuk menganalisis gambar, dan buka menu \'Profil\' untuk melihat riwayat pemeriksaan dan informasi pribadi Anda.</string>
 
     <!-- Check Page -->
     <string name="how_to_use">Cara menggunakan:</string>
     <string name="check_instructions">1. Ambil foto atau unggah gambar mata\n2. Sesuaikan atau potong gambar jika perlu\n3. Ketuk \'Mulai Analisis\' untuk dapatkan hasil</string>
     <string name="pick_image">Pilih Gambar</string>
     <string name="capture_image">Ambil Foto</string>
-    <string name="analyzing_image">Menganalisis gambar...</string>
-    <string name="tips_for_better_results">💡 Tips untuk hasil yang lebih baik:</string>
+    <string name="analyzing_image">Menganalisis gambar…</string>
+    <string name="tips_for_better_results">Tips untuk hasil yang lebih baik:</string>
     <string name="check_tips">• Pastikan pencahayaan yang baik\n• Posisikan mata di tengah frame\n• Hindari gambar yang buram\n• Gunakan gambar resolusi tinggi</string>
     <string name="no_image_selected">Tidak ada gambar yang dipilih</string>
     <string name="pick_content_description">Pilih</string>
@@ -169,22 +168,22 @@
 
     <!-- CNN Information -->
     <string name="cnn_technology">Teknologi CNN</string>
-    <string name="cnn_short_description">Pelajari tentang teknologi AI yang mendukung deteksi katarak</string>
+    <string name="cnn_short_description">Kenali teknologi CNN yang membantu mendeteksi katarak</string>
     <string name="cnn_title">Teknologi CNN</string>
     <string name="cnn_subtitle">fitur dari gambar input</string>
     <string name="cnn_overview">Ringkasan CNN</string>
-    <string name="cnn_overview_content">Jaringan Neural Konvolusi (CNN) adalah algoritma pembelajaran mendalam yang dapat menerima gambar input, memberikan kepentingan (bobot dan bias yang dapat dipelajari) pada berbagai aspek/objek dalam gambar, dan dapat membedakan satu dari yang lain.</string>
+    <string name="cnn_overview_content">Convolutional Neural Network (CNN) adalah teknologi kecerdasan buatan yang bisa menganalisis gambar. CNN dapat mengenali berbagai elemen dalam sebuah gambar dan membedakan satu objek dengan objek lainnya, mirip seperti cara kerja mata manusia.</string>
     <string name="cnn_how_it_works">Cara Kerja CNN</string>
-    <string name="cnn_how_it_works_content">CNN menggunakan operasi matematika yang disebut konvolusi sebagai pengganti perkalian matriks umum di setidaknya satu dari lapisannya. CNN sangat efektif untuk tugas pengenalan gambar karena dapat secara otomatis mempelajari hierarki spasial fitur dari gambar input.</string>
+    <string name="cnn_how_it_works_content">CNN menggunakan perhitungan matematika khusus yang disebut konvolusi untuk memproses gambar. Keunggulan CNN adalah kemampuannya mengenali berbagai detail dalam gambar secara otomatis—mulai dari yang sederhana hingga yang kompleks—sehingga sangat efektif untuk mengenali pola dalam gambar.</string>
     <string name="cnn_layers">Lapisan CNN</string>
-    <string name="cnn_layers_content">• Lapisan Konvolusi: Mendeteksi fitur seperti tepi, garis, dan kurva\n• Lapisan Pooling: Mengurangi dimensi spasial dan kompleksitas komputasi\n• Lapisan Terhubung Penuh: Membuat prediksi akhir berdasarkan fitur yang dipelajari</string>
+    <string name="cnn_layers_content">• Lapisan Konvolusi: Mendeteksi detail seperti garis, tepi, dan lengkungan\n• Lapisan Pooling: Menyederhanakan data agar lebih efisien diproses\n• Lapisan Fully Connected: Membuat kesimpulan akhir berdasarkan semua detail yang ditemukan</string>
     <string name="cnn_in_cataract_detection">CNN dalam Deteksi Katarak</string>
-    <string name="cnn_in_cataract_detection_content">Model CNN kami telah dilatih pada ribuan gambar mata untuk mengidentifikasi pola yang terkait dengan katarak. CNN dapat mendeteksi perubahan halus pada lensa mata yang mungkin menunjukkan adanya katarak, memberikan sistem peringatan dini untuk pengguna.</string>
+    <string name="cnn_in_cataract_detection_content">Model CNN telah dilatih menggunakan dataset gambar mata untuk mengenali tanda-tanda katarak. Teknologi ini mampu mendeteksi perubahan kecil pada lensa mata yang mungkin tidak terlihat kasat mata, sehingga bisa memberikan peringatan dini kepada pengguna.</string>
     <string name="cnn_advantages">Keunggulan CNN</string>
-    <string name="cnn_advantages_content">• Akurasi tinggi dalam klasifikasi gambar\n• Ekstraksi fitur otomatis\n• Robust terhadap variasi pencahayaan dan sudut\n• Pemrosesan cepat setelah dilatih\n• Dapat mendeteksi pola yang tidak terlihat oleh mata manusia</string>
-    <string name="cnn_limitations">Batasan Penting</string>
-    <string name="cnn_limitations_content">Meskipun teknologi CNN sangat kuat, ia memiliki keterbatasan:\n\n• Memerlukan data pelatihan dalam jumlah besar\n• Mungkin tidak bekerja dengan baik pada gambar berkualitas buruk\n• Tidak dapat menggantikan diagnosis medis profesional\n• Hasil harus diverifikasi oleh tenaga kesehatan profesional</string>
-    
+    <string name="cnn_advantages_content">• Tingkat akurasi tinggi dalam menganalisis gambar\n• Bisa mengenali detail secara otomatis\n• Tetap akurat meski kondisi pencahayaan atau sudut berbeda\n• Proses analisis sangat cepat\n• Mampu mendeteksi pola yang sulit dilihat mata manusia</string>
+    <string name="cnn_limitations">Hal yang Perlu Diperhatikan</string>
+    <string name="cnn_limitations_content">Meski teknologi CNN sangat canggih, ada beberapa keterbatasan yang perlu Anda ketahui:\n\n• Butuh banyak data gambar untuk belajar\n• Hasil kurang akurat jika kualitas gambar buruk\n• Tidak bisa menggantikan pemeriksaan dokter</string>
+
     <!-- Login Error Messages -->
     <string name="error_fill_all_fields">Mohon isi semua kolom</string>
     <string name="error_invalid_email">Alamat email tidak valid</string>
@@ -214,7 +213,7 @@
     
     <!-- Result Summaries -->
     <string name="summary_normal">Tidak ada tanda-tanda katarak terdeteksi. Mata Anda tampak sehat. Lanjutkan pemeriksaan mata rutin.</string>
-    <string name="summary_cataract">Tanda-tanda potensial terdeteksi. Silakan konsultasikan dengan dokter mata untuk evaluasi profesional.</string>
+    <string name="summary_cataract">Tanda-tanda katarak terdeteksi. Silakan konsultasikan dengan dokter mata untuk evaluasi profesional.</string>
     <string name="summary_unknown">Gambar tidak dapat dikenali sebagai mata atau kualitasnya terlalu rendah. Silakan coba lagi dengan foto mata yang jelas dan close-up.</string>
     <string name="summary_error">Terjadi kesalahan selama analisis. Silakan periksa pesan kesalahan di atas.</string>
     <!-- ROI View -->
@@ -244,11 +243,10 @@
     <string name="raw_output">Nilai Mentah</string>
     <string name="raw_output_desc">Nilai kepercayaan model (0 = Katarak, 1 = Normal)</string>
     <string name="brightness">Kecerahan Rata-rata</string>
-    <string name="brightness_desc">Tingkat kecerahan rata-rata (0-255)</string>
+    <string name="brightness_desc">Tingkat kecerahan rata–rata (0–255)</string>
     <string name="variance">Variansi</string>
     <string name="variance_desc">Ukuran kontras gambar (semakin tinggi = lebih detail)</string>
-    <string name="edge_density">Kepadatan Tepi</string>
-    <string name="edge_density_desc">Jumlah tepi yang terdeteksi dalam gambar</string>
+
 
     <!-- Accessibility & Placeholders -->
     <string name="example_email">contoh@email.com</string>
@@ -275,14 +273,13 @@
     <!-- Info View Content -->
     <string name="about_cataract">Tentang Katarak</string>
     <string name="info_what_is_title">Apa itu Katarak?</string>
-    <string name="info_what_is_content">Katarak adalah kekeruhan pada lensa mata yang biasanya jernih. Bagi penderita katarak, melihat melalui lensa yang keruh seperti melihat melalui jendela yang berembun atau berkabut. Penglihatan yang kabur akibat katarak dapat membuat lebih sulit untuk membaca, mengemudi mobil (terutama di malam hari) atau melihat ekspresi wajah teman.</string>
-    <string name="info_symptoms_title">Gejala Umum</string>
-    <string name="info_symptoms_content">• Penglihatan kabur, buram atau redup\n• Kesulitan penglihatan di malam hari yang meningkat\n• Sensitivitas terhadap cahaya dan silau\n• Kebutuhan cahaya yang lebih terang untuk membaca dan aktivitas lainnya\n• Melihat \'lingkaran cahaya\' di sekitar lampu\n• Perubahan resep kacamata atau lensa kontak yang sering\n• Warna yang memudar atau menguning\n• Penglihatan ganda pada satu mata</string>
-    <string name="info_prevention_title">Pencegahan</string>
-    <string name="info_prevention_content">• Lakukan pemeriksaan mata secara teratur\n• Berhenti merokok\n• Jaga kondisi kesehatan lainnya\n• Pilih pola makan sehat yang kaya buah dan sayuran\n• Kenakan kacamata hitam yang memblokir sinar ultraviolet B (UVB)\n• Kurangi konsumsi alkohol\n• Pertahankan berat badan yang sehat</string>
+    <string name="info_what_is_content">Katarak terjadi saat lensa mata yang biasanya jernih menjadi keruh. Ibaratnya seperti melihat lewat kaca jendela yang buram atau berkabut. Kondisi ini bisa bikin aktivitas harian jadi lebih susah, seperti membaca, menyetir (khususnya malam hari), atau bahkan melihat ekspresi wajah orang-orang di sekitar Anda.</string>
+    <string name="info_symptoms_title">Gejala yang Umum Terjadi</string>
+    <string name="info_symptoms_content">• Penglihatan jadi kabur atau tidak jelas\n• Semakin sulit melihat saat malam hari\n• Mata lebih sensitif terhadap cahaya terang\n• Butuh pencahayaan lebih untuk membaca atau beraktivitas\n• Melihat lingkaran cahaya di sekitar lampu\n• Resep kacamata atau lensa kontak sering berubah\n• Warna terlihat lebih pudar atau kekuningan\n• Penglihatan ganda di salah satu mata</string>
+    <string name="info_prevention_title">Cara Mencegah</string>
+    <string name="info_prevention_content">• Periksa mata secara rutin\n• Hentikan kebiasaan merokok\n• Kelola kondisi kesehatan lainnya dengan baik\n• Konsumsi makanan bergizi, perbanyak buah dan sayuran\n• Pakai kacamata hitam yang melindungi dari sinar UV\n• Batasi konsumsi alkohol\n• Jaga berat badan tetap ideal</string>
     <string name="info_risk_factors_title">Faktor Risiko</string>
-    <string name="info_risk_factors_content">• Bertambahnya usia\n• Diabetes\n• Paparan sinar matahari yang berlebihan\n• Merokok\n• Obesitas\n• Tekanan darah tinggi\n• Cedera atau peradangan mata sebelumnya\n• Operasi mata sebelumnya\n• Penggunaan obat kortikosteroid dalam jangka panjang\n• Konsumsi alkohol yang berlebihan</string>
+    <string name="info_risk_factors_content">• Pertambahan usia\n• Diabetes\n• Paparan sinar matahari berlebihan\n• Kebiasaan merokok\n• Kelebihan berat badan\n• Tekanan darah tinggi\n• Riwayat cedera atau peradangan pada mata\n• Pernah menjalani operasi mata sebelumnya\n• Penggunaan obat kortikosteroid dalam jangka panjang\n• Konsumsi alkohol yang berlebihan</string>
     <string name="info_treatment_title">Pengobatan</string>
-    <string name="info_treatment_content">Ketika resep kacamata tidak dapat memperjelas penglihatan Anda, satu-satunya pengobatan efektif untuk katarak adalah operasi. Operasi katarak melibatkan pengangkatan lensa yang keruh dan menggantinya dengan lensa buatan yang jernih. Lensa buatan, yang disebut lensa intraokular, diposisikan di tempat yang sama dengan lensa alami Anda. Lensa ini menjadi bagian permanen dari mata Anda.</string>
-
+    <string name="info_treatment_content">Operasi adalah satu-satunya solusi efektif untuk mengatasi katarak. Prosedurnya cukup adalah: lensa mata yang keruh diganti dengan lensa buatan yang jernih (disebut lensa intraokular). Lensa baru ini akan dipasang di posisi yang sama dengan lensa asli dan menjadi bagian permanen dari mata.</string>
 </resources>

@@ -19,7 +19,6 @@ data class ImageProcessingDetails(
     val rawOutput: Float = 0f,
     val meanBrightness: Float = 0f,
     val variance: Float = 0f,
-    val edgeDensity: Float = 0f,
     val isValidImage: Boolean = true
 )
 
@@ -44,7 +43,7 @@ class CataractModel(private val context: Context) {
     
     companion object {
         private const val TAG = "CataractModel"
-        private const val MODEL_FILENAME = "cataract_model_90percent.tflite"
+        private const val MODEL_FILENAME = "cataract_model_final.tflite"
     }
     
     init {
@@ -161,8 +160,10 @@ class CataractModel(private val context: Context) {
     }
     
     /**
-     * Validate image for basic quality checks (brightness, variance)
-     * Returns true if image seems valid, false if likely bad/non-eye
+     * Validate image for quality checks and eye-like feature detection.
+     * Checks brightness, variance, skin tone presence, dark center (pupil),
+     * and circular brightness pattern typical of eye images.
+     * Returns true if image seems like a valid eye, false otherwise.
      */
     private fun validateImage(bitmap: Bitmap): Boolean {
         try {
@@ -175,17 +176,59 @@ class CataractModel(private val context: Context) {
             
             var sumBrightness = 0L
             var sumSqBrightness = 0L
+            var skinToneCount = 0
+            var darkPixelCenterCount = 0
+            var centerPixelCount = 0
+            var centerBrightnessSum = 0L
+            var edgeBrightnessSum = 0L
+            var edgePixelCount = 0
             
-            for (pixel in pixels) {
-                val r = (pixel shr 16) and 0xFF
-                val g = (pixel shr 8) and 0xFF
-                val b = pixel and 0xFF
-                
-                // Perceived brightness formula
-                val brightness = (0.299 * r + 0.587 * g + 0.114 * b).toLong()
-                
-                sumBrightness += brightness
-                sumSqBrightness += brightness * brightness
+            val centerX = width / 2
+            val centerY = height / 2
+            // Center region radius (~30% of image)
+            val centerRadius = (width * 0.3).toInt()
+            
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    val pixel = pixels[y * width + x]
+                    val r = (pixel shr 16) and 0xFF
+                    val g = (pixel shr 8) and 0xFF
+                    val b = pixel and 0xFF
+                    
+                    // Perceived brightness formula
+                    val brightness = (0.299 * r + 0.587 * g + 0.114 * b).toLong()
+                    
+                    sumBrightness += brightness
+                    sumSqBrightness += brightness * brightness
+                    
+                    // --- Check 1: Skin tone detection ---
+                    // Skin pixels typically have R > G > B, with R relatively high
+                    if (r > 80 && g > 40 && b > 20 &&
+                        r > g && g > b &&
+                        (r - g) > 10 && (r - b) > 20 &&
+                        r < 250 && g < 230) {
+                        skinToneCount++
+                    }
+                    
+                    // --- Check 2 & 3: Center vs edge analysis ---
+                    val dx = x - centerX
+                    val dy = y - centerY
+                    val distSq = dx * dx + dy * dy
+                    
+                    if (distSq <= centerRadius * centerRadius) {
+                        // Center region
+                        centerPixelCount++
+                        centerBrightnessSum += brightness
+                        // Dark pixels in center (potential pupil)
+                        if (brightness < 60) {
+                            darkPixelCenterCount++
+                        }
+                    } else {
+                        // Edge region
+                        edgePixelCount++
+                        edgeBrightnessSum += brightness
+                    }
+                }
             }
             
             val numPixels = (width * height).toLong()
@@ -195,21 +238,46 @@ class CataractModel(private val context: Context) {
             val meanSqBrightness = sumSqBrightness / numPixels
             val variance = meanSqBrightness - (meanBrightness * meanBrightness)
             
-            // Calculate edge density
-            val edgeDensity = calculateEdgeDensity(pixels, width, height)
+            // Calculate ratios
+            val skinToneRatio = skinToneCount.toFloat() / numPixels
+            val darkCenterRatio = if (centerPixelCount > 0) 
+                darkPixelCenterCount.toFloat() / centerPixelCount else 0f
+            val centerMeanBrightness = if (centerPixelCount > 0) 
+                centerBrightnessSum.toFloat() / centerPixelCount else 0f
+            val edgeMeanBrightness = if (edgePixelCount > 0) 
+                edgeBrightnessSum.toFloat() / edgePixelCount else 0f
+            
+            Log.d(TAG, "Validation - skinToneRatio: $skinToneRatio, " +
+                    "darkCenterRatio: $darkCenterRatio, " +
+                    "centerBrightness: $centerMeanBrightness, " +
+                    "edgeBrightness: $edgeMeanBrightness")
+            
+            // Score-based validation: image must pass at least 2 of 3 eye-feature checks
+            var eyeFeatureScore = 0
+            
+            // Feature 1: Has skin tone pixels (eyes are surrounded by skin)
+            if (skinToneRatio >= 0.05f) eyeFeatureScore++
+            
+            // Feature 2: Has dark region in center (pupil/iris)
+            if (darkCenterRatio >= 0.03f) eyeFeatureScore++
+            
+            // Feature 3: Center is darker than edges (iris/pupil vs sclera/skin)
+            if (centerMeanBrightness < edgeMeanBrightness) eyeFeatureScore++
             
             // Store processing details for breakdown display
-            val isValid = meanBrightness in 20..235 && variance >= 100
+            val basicValid = meanBrightness in 50..235 && variance >= 100
+            val eyeFeaturesValid = eyeFeatureScore >= 2
+            val isValid = basicValid && eyeFeaturesValid
+            
             lastProcessingDetails = ImageProcessingDetails(
                 rawOutput = 0f, // Will be updated after inference
                 meanBrightness = meanBrightness.toFloat(),
                 variance = variance.toFloat(),
-                edgeDensity = edgeDensity,
                 isValidImage = isValid
             )
             
             // Check if too dark or too bright (range 0-255)
-            if (meanBrightness < 20 || meanBrightness > 235) {
+            if (meanBrightness < 50 || meanBrightness > 235) {
                 Log.d(TAG, "Image rejected: Too dark or too bright")
                 return false
             }
@@ -220,6 +288,12 @@ class CataractModel(private val context: Context) {
                 return false
             }
             
+            // Check eye-like features
+            if (!eyeFeaturesValid) {
+                Log.d(TAG, "Image rejected: Not enough eye-like features (score: $eyeFeatureScore/3)")
+                return false
+            }
+            
             return true
             
         } catch (e: Exception) {
@@ -227,44 +301,7 @@ class CataractModel(private val context: Context) {
             return true // Fail safe: assume valid if check fails
         }
     }
-    
-    /**
-     * Calculate edge density using simple gradient
-     */
-    private fun calculateEdgeDensity(pixels: IntArray, width: Int, height: Int): Float {
-        var edgeSum = 0L
-        var count = 0
-        
-        for (y in 1 until height - 1) {
-            for (x in 1 until width - 1) {
-                val idx = y * width + x
-                
-                val left = getGrayscale(pixels[idx - 1])
-                val right = getGrayscale(pixels[idx + 1])
-                val top = getGrayscale(pixels[idx - width])
-                val bottom = getGrayscale(pixels[idx + width])
-                
-                // Simple gradient magnitude
-                val gx = kotlin.math.abs(right - left)
-                val gy = kotlin.math.abs(bottom - top)
-                
-                edgeSum += gx + gy
-                count++
-            }
-        }
-        
-        return if (count > 0) edgeSum.toFloat() / count else 0f
-    }
-    
-    /**
-     * Get grayscale value from pixel
-     */
-    private fun getGrayscale(pixel: Int): Int {
-        val r = (pixel shr 16) and 0xFF
-        val g = (pixel shr 8) and 0xFF
-        val b = pixel and 0xFF
-        return (0.299 * r + 0.587 * g + 0.114 * b).toInt()
-    }
+
     
     /**
      * Load image from URI and resize it

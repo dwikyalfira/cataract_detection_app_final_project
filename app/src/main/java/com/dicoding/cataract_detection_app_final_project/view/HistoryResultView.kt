@@ -128,6 +128,9 @@ fun HistoryResultView(
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(history.imageUri)
+                                .crossfade(true)
+                                .memoryCacheKey(history.imageUri)
+                                .diskCacheKey(history.imageUri)
                                 .build(),
                             contentDescription = stringResource(R.string.analysis_image_content_description),
                             modifier = Modifier.fillMaxSize(),
@@ -266,13 +269,10 @@ fun HistoryResultView(
                                         color = MaterialTheme.colorScheme.outlineVariant
                                     )
                                     
-                                    // Check if result is Unknown
-                                    val showDash = history.predictionResult.equals("Unknown", ignoreCase = true)
-                                    
                                     // Raw Output
                                     HistoryBreakdownItem(
                                         label = stringResource(R.string.raw_output),
-                                        value = if (showDash) "-" else String.format("%.4f", history.rawOutput),
+                                        value = String.format("%.4f", history.rawOutput),
                                         description = stringResource(R.string.raw_output_desc)
                                     )
                                     
@@ -281,7 +281,7 @@ fun HistoryResultView(
                                     // Mean Brightness
                                     HistoryBreakdownItem(
                                         label = stringResource(R.string.brightness),
-                                        value = if (showDash) "-" else String.format("%.1f", history.meanBrightness),
+                                        value = String.format("%.1f", history.meanBrightness),
                                         description = stringResource(R.string.brightness_desc)
                                     )
                                     
@@ -290,17 +290,8 @@ fun HistoryResultView(
                                     // Variance
                                     HistoryBreakdownItem(
                                         label = stringResource(R.string.variance),
-                                        value = if (showDash) "-" else String.format("%.1f", history.variance),
+                                        value = String.format("%.1f", history.variance),
                                         description = stringResource(R.string.variance_desc)
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    
-                                    // Edge Density
-                                    HistoryBreakdownItem(
-                                        label = stringResource(R.string.edge_density),
-                                        value = if (showDash) "-" else String.format("%.2f", history.edgeDensity),
-                                        description = stringResource(R.string.edge_density_desc)
                                     )
                                 }
                             }
@@ -485,8 +476,7 @@ fun HistoryResultViewPreview() {
         userId = "user123",
         rawOutput = 0.1234f,
         meanBrightness = 127.5f,
-        variance = 2500.0f,
-        edgeDensity = 45.67f
+        variance = 2500.0f
     )
     HistoryResultView(history = history, onBackClick = {})
 }

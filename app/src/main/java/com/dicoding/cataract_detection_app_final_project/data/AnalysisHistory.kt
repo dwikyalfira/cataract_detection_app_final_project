@@ -12,8 +12,7 @@ data class AnalysisHistory(
     // Image processing details for breakdown display
     val rawOutput: Float = 0f,
     val meanBrightness: Float = 0f,
-    val variance: Float = 0f,
-    val edgeDensity: Float = 0f
+    val variance: Float = 0f
 ) {
     fun getFormattedDate(): String {
         val date = Date(timestamp)

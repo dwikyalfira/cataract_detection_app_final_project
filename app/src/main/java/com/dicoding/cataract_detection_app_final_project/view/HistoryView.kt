@@ -513,6 +513,9 @@ private fun HistoryItem(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(history.imageUri)
                             .crossfade(true)
+                            .size(300) // Downsample for thumbnail
+                            .memoryCacheKey(history.imageUri)
+                            .diskCacheKey(history.imageUri)
                             .build(),
                         contentDescription = stringResource(id = R.string.analysis_image_content_description),
                         modifier = Modifier.fillMaxSize(),

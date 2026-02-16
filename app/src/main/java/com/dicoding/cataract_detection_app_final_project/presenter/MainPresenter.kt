@@ -9,8 +9,8 @@ import com.dicoding.cataract_detection_app_final_project.model.CataractModel
 import com.dicoding.cataract_detection_app_final_project.model.ImageProcessingDetails
 import com.dicoding.cataract_detection_app_final_project.repository.HistoryRepository
 import com.dicoding.cataract_detection_app_final_project.utils.ImageCropper
-import com.dicoding.cataract_detection_app_final_project.view.ROIRect
 import com.dicoding.cataract_detection_app_final_project.view.ImageAdjustments
+import com.dicoding.cataract_detection_app_final_project.view.ROIRect
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -294,8 +294,7 @@ class MainPresenter {
                                     userId = currentUserId,
                                     rawOutput = details.rawOutput,
                                     meanBrightness = details.meanBrightness,
-                                    variance = details.variance,
-                                    edgeDensity = details.edgeDensity
+                                    variance = details.variance
                                 )
                                 android.util.Log.d("MainPresenter", "Saving history in background...")
                                 repo.saveAnalysisHistory(history)
@@ -311,9 +310,7 @@ class MainPresenter {
                         _predictionResult.value = result
                         _confidenceScore.value = confidence
                         _processingDetails.value = details
-                        
 
-                        
                         _isLoading.value = false
                         onNavigateToResult?.invoke()
                     }

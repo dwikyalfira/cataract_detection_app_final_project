@@ -261,13 +261,10 @@ fun ResultView(
                                         color = MaterialTheme.colorScheme.outlineVariant
                                     )
                                     
-                                    // Check if result is Unknown
-                                    val showDash = predictionResult.equals("Unknown", ignoreCase = true)
-                                    
                                     // Raw Output
                                     BreakdownItem(
                                         label = stringResource(R.string.raw_output),
-                                        value = if (showDash) "-" else String.format("%.4f", processingDetails.rawOutput),
+                                        value = String.format("%.4f", processingDetails.rawOutput),
                                         description = stringResource(R.string.raw_output_desc)
                                     )
                                     
@@ -276,7 +273,7 @@ fun ResultView(
                                     // Mean Brightness
                                     BreakdownItem(
                                         label = stringResource(R.string.brightness),
-                                        value = if (showDash) "-" else String.format("%.1f", processingDetails.meanBrightness),
+                                        value = String.format("%.1f", processingDetails.meanBrightness),
                                         description = stringResource(R.string.brightness_desc)
                                     )
                                     
@@ -285,17 +282,8 @@ fun ResultView(
                                     // Variance
                                     BreakdownItem(
                                         label = stringResource(R.string.variance),
-                                        value = if (showDash) "-" else String.format("%.1f", processingDetails.variance),
+                                        value = String.format("%.1f", processingDetails.variance),
                                         description = stringResource(R.string.variance_desc)
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    
-                                    // Edge Density
-                                    BreakdownItem(
-                                        label = stringResource(R.string.edge_density),
-                                        value = if (showDash) "-" else String.format("%.2f", processingDetails.edgeDensity),
-                                        description = stringResource(R.string.edge_density_desc)
                                     )
                                 }
                             }

@@ -246,8 +246,7 @@
     <string name="brightness_desc">Average brightness level (0-255)</string>
     <string name="variance">Variance</string>
     <string name="variance_desc">Image contrast measure (higher = more detail)</string>
-    <string name="edge_density">Edge Density</string>
-    <string name="edge_density_desc">Amount of edges detected in the image</string>
+
 
     <!-- Accessibility & Placeholders -->
     <string name="example_email">example@email.com</string>

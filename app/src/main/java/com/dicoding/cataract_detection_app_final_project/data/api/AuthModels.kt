@@ -27,7 +27,6 @@ data class HistoryData(
     @SerializedName("raw_output") val rawOutput: Float = 0f,
     @SerializedName("mean_brightness") val meanBrightness: Float = 0f,
     @SerializedName("variance") val variance: Float = 0f,
-    @SerializedName("edge_density") val edgeDensity: Float = 0f,
     @SerializedName("created_at") val createdAt: String,
     @SerializedName("timestamp") val timestamp: Long
 )
